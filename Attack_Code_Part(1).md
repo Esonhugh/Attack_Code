@@ -1,33 +1,12 @@
----
-title: Attack "Code" - Part(1)
-date: 2022-07-01 22:30:00
-categories: [review]
-tags: [review,cloud]
----
-
-# Intro
-
-这篇文章是纯纯的引入性质文章, 如果您是熟悉这些的人, 尤其是有过入侵经验的大懂懂, 可以简单的看看结论和内容, 开拓一下思维, 一笑而过, 当个笑话. 
-
-当然, 如果有对文本有些看法或者有些想要补充的, 可以直接写在下面的评论区, 也可以直接 [mail 我](mailto:cloud-sec-from-blog@eson.ninja). 
-PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令, 主要是分享所谓的思路.
-
-本文综合了我 **几次在梦里渗透测试时候的发现**
-
-> Author: Esonhugh
-> 
-> This is the Frist Part of "Attack 'Code'"
-> 
-> Intro And Show some thing funny.
-
+# Attack Code PART 1 - Intro And Funny Weakness
 
 # What You Need Know - MISC
 
 ## Cloud 
 
-什么是[云计算](https://en.wikipedia.org/wiki/Cloud_computing)?
+什么是 [云计算](https://en.wikipedia.org/wiki/Cloud_computing)?
 
-**通过付费和互联网, 使得共享的软硬件资源和信息可以按需求提供给计算机各种终端和其他设备, 使用某个或者多个服务商提供的电脑基础建设用作于计算和资源.**这便是我们所看到的 **云**. (Everything as a Service. [EaaS,aaS])
+**通过付费和互联网, 使得共享的软硬件资源和信息可以按需求提供给计算机各种终端和其他设备, 使用某个或者多个服务商提供的电脑基础建设用作于计算和资源.** 这便是我们所看到的 **云**. (Everything as a Service. [EaaS,aaS])
 
 复杂的定义并非我的意愿, 搬弄众说周知的概念脱离主题也显得文章垃圾. 
 
@@ -172,6 +151,8 @@ PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令,
 
 这其实很容易导致 API 接口的弱鉴权. 这种确实非常常见, 在经验不足的开发人员中这类问题是出奇的多. 我认为其主要原因, 应该是 "因为 API 并不是很好的能被枚举的物品而导致的隐蔽性".
 
+> 这里的弱鉴权是指, 其实是有鉴权但是鉴权逻辑不完善, 比如说 校验了是否为登陆用户, 但是没有对权限做良好分离 (可以导致垂直或者水平越权), 这种垂直越权在管理的接口中可以很容易被发现.
+
 #### API Exposure
 
 > 当然 凡事是有例外的, 比如: 
@@ -200,3 +181,30 @@ PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令,
 很多时候会忽略这里相关的鉴权, 可能是交给 Auth 的(抽象出来的 Server 中间件) 或者干脆不鉴权了.
 
 这里会导致很严重的 未授权访问 + 信息泄露 或者 注入问题 , 当然更为常见的是导致水平越权和垂直越权(通常在 3 个以上的权限级别的情况下就很容易出现这种问题. [RBAC](https://zh.wikipedia.org/zh-tw/%E4%BB%A5%E8%A7%92%E8%89%B2%E7%82%BA%E5%9F%BA%E7%A4%8E%E7%9A%84%E5%AD%98%E5%8F%96%E6%8E%A7%E5%88%B6) 不在讨论范围内.)
+
+脆弱的鉴权还有一个 问题是不正确的验证实现
+
+这里上面 SSO 不算是这种问题 因为设计出来本来就是这样的
+
+在我举一个 OAuth 的例子 在验证的时候 Redirect 没有严格限制 也没有参数
+
+```mermaid
+sequenceDiagram
+	participant User
+	participant ThirdParty
+	participant TrustedPlatform
+	participant Hacker
+	Note left of User: There is the Auth Step.
+	User ->> Hacker : Request OAuth 
+	Note left of Hacker: There is hackers 3rd Party.
+	Hacker ->> User : Redirect to TrustedPlatform with The URL param is Hacker(This Should be 3ed party Server as call back instead of Hacker)
+	User ->> TrustedPlatform : Auth!
+	TrustedPlatform ->> User: Redirect hacker Server With Users Infos in TrustedPlatform and make user to Send information to hackers Server.
+	User ->> Hacker: The data and id gotten in TrustedPlatform.
+	Hacker ->> TrustedPlatform: Get more information from TrustedPlatform(Which should give the 3rd Party)
+	Hacker ->> ThirdParty: Act As user in platform.
+	Hacker ->> User: Act as third party.
+```
+
+比如允许你任意跳转 这样我们可以写入一个我们自己可控的服务 然后获取到平台的 Token. 
+接下来我们可以对用户伪装成第三方服务提供一些服务等 伪装用户从可信任平台获取用户信息 伪装用户请求第三方服务

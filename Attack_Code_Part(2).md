@@ -1,29 +1,4 @@
----
-title: Attack "Code" - Part(2)
-date: 2022-07-01 22:30:00
-categories: [review]
-tags: [review,cloud]
----
-
-# Intro
-
-这篇文章是纯纯的引入性质文章, 如果您是熟悉这些的人, 尤其是有过入侵经验的大懂懂, 可以简单的看看结论和内容, 开拓一下思维, 一笑而过, 当个笑话. 
-
-当然, 如果有对文本有些看法或者有些想要补充的, 可以直接写在下面的评论区, 也可以直接 [mail 我](mailto:cloud-sec-from-blog@eson.ninja). 
-PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令, 主要是分享所谓的思路.
-
-本文综合了我 **几次在梦里渗透测试时候的发现**
-
-> Author: Esonhugh
->  
-> This is the Second Part of "Attack 'Code'"
-> 
-> Intro And Show some thing funny.
-
-
-书接上文第一篇
-
-# How Attack Vector Included in DEV
+# Attack Code PART 2 - Common Develop Service
 
 ## Codebase
 
@@ -117,10 +92,10 @@ Jenkins 相关的滥用非常的多 可以看看 [Hacktricks - Jenkins](https://
 
 ### Config Server
 
-#### 跨越服务
+#### Cross Service
 有些企业常常会有 Config Server 这种服务, 通过一个 Creds 来访问和区分每个服务需要的凭证信息和内容, 可以做到给服务需要的资源. 如果配置的恰当, 一般暴露出来的内容其实很不利于继续横向的. 这种突破点一般是去寻找业务与业务之间相关的数据. 往往可以越过去, 这些地方很容易因为偷懒而获得高权限. 比如说共享数据库的账号的服务, **共享一些资源的凭证以及 API 调用的 KEY**. 这种服务间的跨越往往更为简单有效. 
 
-#### 中间人
+#### Man In the Middle
 
 此外, 这类配置服务需要注意预防中间人. 配置信息一般是较为敏感的内容. 这里需要注意. 
 

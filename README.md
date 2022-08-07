@@ -1,5 +1,5 @@
 ---
-title: Attack "Code"
+title: Attack "Code" - Part(1)
 date: 2022-07-01 22:30:00
 categories: [review]
 tags: [review,cloud]
@@ -15,6 +15,10 @@ PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令,
 本文综合了我 **几次在梦里渗透测试时候的发现**
 
 > Author: Esonhugh
+> 
+> This is the 1st Part of "Attack 'Code'"
+> 
+> Intro And Show some thing funny.# Attack Code PART 1 - Intro And Funny Weakness
 
 # What You Need Know - MISC
 
@@ -167,6 +171,8 @@ PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令,
 
 这其实很容易导致 API 接口的弱鉴权. 这种确实非常常见, 在经验不足的开发人员中这类问题是出奇的多. 我认为其主要原因, 应该是 "因为 API 并不是很好的能被枚举的物品而导致的隐蔽性".
 
+> 这里的弱鉴权是指, 其实是有鉴权但是鉴权逻辑不完善, 比如说 校验了是否为登陆用户, 但是没有对权限做良好分离 (可以导致垂直或者水平越权), 这种垂直越权在管理的接口中可以很容易被发现.
+
 #### API Exposure
 
 > 当然 凡事是有例外的, 比如: 
@@ -195,6 +201,33 @@ PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令,
 很多时候会忽略这里相关的鉴权, 可能是交给 Auth 的(抽象出来的 Server 中间件) 或者干脆不鉴权了.
 
 这里会导致很严重的 未授权访问 + 信息泄露 或者 注入问题 , 当然更为常见的是导致水平越权和垂直越权(通常在 3 个以上的权限级别的情况下就很容易出现这种问题. [RBAC](https://zh.wikipedia.org/zh-tw/%E4%BB%A5%E8%A7%92%E8%89%B2%E7%82%BA%E5%9F%BA%E7%A4%8E%E7%9A%84%E5%AD%98%E5%8F%96%E6%8E%A7%E5%88%B6) 不在讨论范围内.)
+
+脆弱的鉴权还有一个 问题是不正确的验证实现
+
+这里上面 SSO 不算是这种问题 因为设计出来本来就是这样的
+
+在我举一个 OAuth 的例子 在验证的时候 Redirect 没有严格限制 也没有参数
+
+```mermaid
+sequenceDiagram
+	participant User
+	participant ThirdParty
+	participant TrustedPlatform
+	participant Hacker
+	Note left of User: There is the Auth Step.
+	User ->> Hacker : Request OAuth 
+	Note left of Hacker: There is hackers 3rd Party.
+	Hacker ->> User : Redirect to TrustedPlatform with The URL param is Hacker(This Should be 3ed party Server as call back instead of Hacker)
+	User ->> TrustedPlatform : Auth!
+	TrustedPlatform ->> User: Redirect hacker Server With Users Infos in TrustedPlatform and make user to Send information to hackers Server.
+	User ->> Hacker: The data and id gotten in TrustedPlatform.
+	Hacker ->> TrustedPlatform: Get more information from TrustedPlatform(Which should give the 3rd Party)
+	Hacker ->> ThirdParty: Act As user in platform.
+	Hacker ->> User: Act as third party.
+```
+
+比如允许你任意跳转 这样我们可以写入一个我们自己可控的服务 然后获取到平台的 Token. 
+接下来我们可以对用户伪装成第三方服务提供一些服务等 伪装用户从可信任平台获取用户信息 伪装用户请求第三方服务# Attack Code PART 2 - Common Develop Service
 
 ## Codebase
 
@@ -288,10 +321,10 @@ Jenkins 相关的滥用非常的多 可以看看 [Hacktricks - Jenkins](https://
 
 ### Config Server
 
-#### 跨越服务
+#### Cross Service
 有些企业常常会有 Config Server 这种服务, 通过一个 Creds 来访问和区分每个服务需要的凭证信息和内容, 可以做到给服务需要的资源. 如果配置的恰当, 一般暴露出来的内容其实很不利于继续横向的. 这种突破点一般是去寻找业务与业务之间相关的数据. 往往可以越过去, 这些地方很容易因为偷懒而获得高权限. 比如说共享数据库的账号的服务, **共享一些资源的凭证以及 API 调用的 KEY**. 这种服务间的跨越往往更为简单有效. 
 
-#### 中间人
+#### Man In the Middle
 
 此外, 这类配置服务需要注意预防中间人. 配置信息一般是较为敏感的内容. 这里需要注意. 
 
@@ -320,16 +353,89 @@ e.g. 拿到了对方服务的二进制文件, 但是没有对方服务的 Config
 这类泄漏基本都有相关的利用和检查工具.
 
 但是我还是认为这种方式的可行性是很低的, 因为并不一定能找到泄漏, 也不是所有 Key 都可以, 也有可能对方程序员的安全素养非常的高或者根本没有这种平台的账号, 当然 Github 之类的平台还会有泄漏的检测和泄漏的警告邮件, 在种种原因下, 如果寄希望于此是非常容易导致竹篮打水一场空. 这也是为什么之前我打算删除这方面的内容.
+# Attack Code PART 3 - Cloud Involved in Codes
 
 # When Cloud involved
-[[ToDo]]
+当云技术作为一种新型技术栈开始普及, 我们之前的攻击点又会如何变化.
 
-当云技术作为一种新型技术栈开始普及, 我们之前的攻击点又会如何.
+> 其实之前的文章中已经有所提及这方面的内容了.
+>
+> 先回顾一下之前的部分 在最先前的导入部分我有所提及.
+>
+> 看看 CNCF 的技术愿景 https://landscape.cncf.io/ 
+>
+> 这些软件或者服务项目都被各位佬们盯得死死的. 
 
-其实之前的文章中已经有所提及这方面的内容了.
+新技术总是能给人们带来新的玩法, 但是同时也会伴随着新的攻击面.
 
-先回顾一下之前的部分 在最先前的 Misc 部分我有所提及.
+## Container
 
-看看 CNCF 的技术愿景 https://landscape.cncf.io/ 
+容器化是云时代的第一个技术上的变革.
 
-这些软件或者服务项目都被各位佬们盯得死死的. 
+> 准确点说 容器化和容器编排带来了云时代的开始. 
+> 
+> 较为常见的是以 谷歌重写内部的编排系统 命名为 Kubernetes 后捐赠给 Linux 开源基金会作为云时代的开始
+> 
+> 当然这里不是历史研究文章.
+
+Container 主要给开发者提供了隔离的最小运行环境, 解决了 "我本地能跑, 但是远程服务跑不起来" 这种问题. 可以看看我第一篇文章的 IaC 部分.
+
+容器隔离了很多东西, 其具体方法是通过内核的一些新特性 cgroup 和 namespace 隔离开来多种系统资源, 使得传统的针对所依赖资源进行滥用的进攻方法的危害大大降低. 
+
+> 例如:
+> 请设想这样一个场景: 应用程序和被攻陷的数据库资源, 在基于容器的库站分离时
+> 这使得即便我们拿下数据库中所有权, 也无法让我们进行通过 dumpfile 或者 日志 的方法写一句话木马的操作来获取到 服务器 shell. 在这里的文件系统是隔离开的
+
+但是容器本身仍然具有两类核心攻击面. 这里类似逃逸, 如下:
+- 内核共享的调用/内存
+- 没有良好分离的资源 例如 proc 等.
+
+> 可以看看 知道创宇当时给我的面试题 [Release-Agent Docker Escape](https://github.com/Esonhugh/Docker-Release-Agent-Escape) 我用 Obsidian 构建了知识网. 可以看看作为参考. 当然本文其实也是在这里编辑的
+
+后者基本是开发图省事或者不禁意间造成的错误配置, 通常利用手段是称之为 LoLBins 的技术. 这是一个非常广泛的话题. 这里就不做过多的赘述
+
+> (举一个小小的例子 具有错误 suid 的 find 二进制权限, 可以通过 `-exec /bin/bash -p ` 
+ 进行权限提升) 
+
+## Kubernetes
+
+谷歌开发的大名鼎鼎的编排系统 Go 开发的然后捐给了 Linux 基金会 然后有了 CNCF. 客套的话我们就不多说了. 
+
+现在也有很多的公有的云服务具有这类的服务 
+
+K8s 主要的脆弱点需要注意一些 
+
+- 上面提到的容器的问题 
+- 权限配置的问题 serviceaccount 这种凭据
+- 还需要留意下是否存在 几个严重的 CVE 尤其是提权类的
+- 控制端口 监控平台 管理平台 或者具有特殊权限的 Pod2 暴露
+
+有一个好用的枚举工具叫做 CDK 据说挺强 
+
+https://madhuakula.com/kubernetes-goat/docs/ 这就是不错的学习 k8s 和相关安全的网站
+
+对于这类集群的监控 web 端也是 开发人员常常用于监控和测试整个集群的状态. 例如 weave ,当然这种也是一种管理工具, 众所周知 所有的 **管理工具**都是可以滥用成 **黑客工具**的 比如说 psexec 这种 sysinternals toolkit.
+
+## Clouds Services
+
+这里主要是一些公有云服务还有一些搭建的私有但是可接入的云(政务). 
+
+云的核心和常规内网渗透并不太一样, 但是接触下来发现和域有一些些类似. 
+
+例如云偏重于高权限账户 AKSK STS 这类 **凭据** 的滥用 尤其是一些跨服务的凭证. 这类凭证丰富了开发者在系统内或者云端可以调用的资源, 同时也有助于红队和渗透队员扩大他们的战果 获取到更多更敏感的信息. 
+
+因此往往在相对云渗透测试过程中我们会更加侧重于对于诸如  `config`\ `配置下发` \ `数据库`\ `源码`\ `文档`\ `集成测试自动化` 之类资产, 尝试找到他们然后滥用他们, 而不仅仅是内网的一些奇技淫巧.
+
+此外特别值得一提的是, 需要注意一些云环境的内网中还会有称之为元数据的内容 也就是 meta-data 服务, 同样可以泄漏不少有价值的信息, 还有 \[相当致命\] 的 STSToken 的获取. 这直接导致 SSRF 可以直接获得对某些资源(OSS ECS)的访问能力, 因而形成了 SSRF 这类漏洞在云上的一种特殊利用, 以至于现在不少的文章在提及到云安全的时候提到这种攻击方法.
+
+当然对于开发而言, 程序接入云使用云的服务, 通过云服务商提供的 SDK 和访问凭证 可以很方便的进行开发和管理处理云上拥有的资源. 同样这些用到了其中的服务凭证也常常就成为了攻击者滥用的地方.
+
+## WrapUp
+
+这些已经有大佬开始整理并且输出了很多的文章和大量的工具. 
+
+比如说 [T-Wiki](https://wiki.teamssix.com) [cf](https://github.com/teamssix/cf) aws 还有 [pacu](https://github.com/RhinoSecurityLabs/pacu) 这类工具.
+
+# Future
+
+我想云很快应该会在虚拟的内网组建中和一些企业内部的网络链接起来 通过特定的路由方式进行深度合作, 例如云上域的 AzureAD. 和更多的 OA 项目管理等程序软件进行协同合作 开发 并且提供服务. 
