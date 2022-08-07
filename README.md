@@ -1,10 +1,3 @@
----
-title: Attack "Code" - Part(1)
-date: 2022-07-01 22:30:00
-categories: [review]
-tags: [review,cloud]
----
-
 # Intro
 
 这篇文章是纯纯的引入性质文章, 如果您是熟悉这些的人, 尤其是有过入侵经验的大懂懂, 可以简单的看看结论和内容, 开拓一下思维, 一笑而过, 当个笑话. 
@@ -12,13 +5,16 @@ tags: [review,cloud]
 当然, 如果有对文本有些看法或者有些想要补充的, 可以直接写在下面的评论区, 也可以直接 [mail 我](mailto:cloud-sec-from-blog@eson.ninja). 
 PS: 记得说明来意. 文章不会有 很多的具体的入侵操作和命令, 主要是分享所谓的思路.
 
-本文综合了我 **几次在梦里渗透测试时候的发现**
+本文综合了我 **几次在梦里渗透测试时候的发现** /doge 
 
 > Author: Esonhugh
 > 
-> This is the 1st Part of "Attack 'Code'"
+> This is whole part of "Attack 'Code'"
 > 
-> Intro And Show some thing funny.# Attack Code PART 1 - Intro And Funny Weakness
+> Intro And Show some thing funny.
+
+
+> Attack Code PART 1 - Intro And Funny Weakness
 
 # What You Need Know - MISC
 
@@ -227,7 +223,9 @@ sequenceDiagram
 ```
 
 比如允许你任意跳转 这样我们可以写入一个我们自己可控的服务 然后获取到平台的 Token. 
-接下来我们可以对用户伪装成第三方服务提供一些服务等 伪装用户从可信任平台获取用户信息 伪装用户请求第三方服务# Attack Code PART 2 - Common Develop Service
+接下来我们可以对用户伪装成第三方服务提供一些服务等 伪装用户从可信任平台获取用户信息 伪装用户请求第三方服务
+
+> Attack Code PART 2 - Common Develop Service
 
 ## Codebase
 
@@ -353,7 +351,8 @@ e.g. 拿到了对方服务的二进制文件, 但是没有对方服务的 Config
 这类泄漏基本都有相关的利用和检查工具.
 
 但是我还是认为这种方式的可行性是很低的, 因为并不一定能找到泄漏, 也不是所有 Key 都可以, 也有可能对方程序员的安全素养非常的高或者根本没有这种平台的账号, 当然 Github 之类的平台还会有泄漏的检测和泄漏的警告邮件, 在种种原因下, 如果寄希望于此是非常容易导致竹篮打水一场空. 这也是为什么之前我打算删除这方面的内容.
-# Attack Code PART 3 - Cloud Involved in Codes
+
+> Attack Code PART 3 - Cloud Involved in Codes
 
 # When Cloud involved
 当云技术作为一种新型技术栈开始普及, 我们之前的攻击点又会如何变化.
