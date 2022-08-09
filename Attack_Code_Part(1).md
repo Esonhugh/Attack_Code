@@ -1,4 +1,4 @@
-# Attack Code PART 1 - Intro And Funny Weakness
+> # Attack Code PART 1 - Intro And Funny Weakness
 
 # What You Need Know - MISC
 
@@ -208,3 +208,4 @@ sequenceDiagram
 
 比如允许你任意跳转 这样我们可以写入一个我们自己可控的服务 然后获取到平台的 Token. 
 接下来我们可以对用户伪装成第三方服务提供一些服务等 伪装用户从可信任平台获取用户信息 伪装用户请求第三方服务
+
