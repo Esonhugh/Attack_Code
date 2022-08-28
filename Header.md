@@ -1,9 +1,3 @@
----
-title: Attack "Code" - Part(1)
-date: 2022-07-01 22:30:00
-categories: [review]
-tags: [review,cloud]
----
 
 # Intro
 
@@ -19,5 +13,10 @@ PS: 当然记得说明来意. 文章不会有具体的入侵操作的实际内�
 > This is the whole Part of "Attack 'Code'"
 > 
 > Intro Cloud Security for you And Show some thing funny i found.
+> 
+> 我会尽量简化我的表达, 使得信息密度更高
+
+Thank u for your reading.
+
 
 
