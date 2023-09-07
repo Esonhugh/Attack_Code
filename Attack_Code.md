@@ -5,7 +5,7 @@ This article is more of an(?) introductory article. If you are already familiar 
 Of course, if you have any thoughts or want to add something to the text, you can leave a comment below or directly [email me](mailto:cloud-sec-from-blog@eson.ninja).
  PS: Of course, explain your intention. The article does not contain any actual invasive operations or execution commands, mainly sharing the so-called thought process.
 
-This article summarizes some of my **discoveries from penetration testing in my dreams** /doge
+This article summarizes some of my **discoveries from penetration testing in my dreams** /LoL.
 
 > Author: Esonhugh
 >
@@ -25,7 +25,7 @@ Thank you for reading.
 
 What is [cloud computing](https://en.wikipedia.org/wiki/Cloud_computing)?
 
-**Through paying and the internet, shared software and hardware resources and information can be provided on demand to various end devices and other devices for computing and resources, using the computer infrastructure of one or more service providers as a service. This is the "cloud" we see.** (Everything as a Service. [EaaS,aaS])
+**Through paying and the internet, shared software and hardware resources and information can be provided on demand to various end devices and other devices for computing and resources, using the computer infrastructure of one or more service providers as a service. This is the "cloud" we see.** (Everything as a Service. EaaS, XaaS)
 
 Of course, I don't intend to use complex definitions that are irrelevant to the topic. So I think I can redefine this from the perspective of a developer or DevOps:
 
@@ -38,15 +38,15 @@ For example:
 - Code
   - Code hosting services like Tencent Coding Platform and various alternatives (not very common though)
 - Data storage
-  - Object storage like OSS and COS
+  - Object storage like OSS  AWS S3
   - Database management like RDS (turnkey Mysql, Redis services for unified management)
 - Deployment
-  - Server products like ECS
-  - Middleware
+  - Virtual Server products like ECS (in AlibabaCloud) EC2 (in AWS)
+  - Middleware or Gateways
   - Message queues
   - CDN caching for efficient content delivery
   - Security products like DDoS protection and cloud firewalls
-- Virtualization
+- More Virtualization 
   - Container orchestration like ready-to-use Kubernetes clusters (almost all have this)
   - Storage virtualization like virtual cloud disks
   - Network virtualization like SDN for customizable internal networks, VPCs, domain names, IPs
@@ -59,11 +59,11 @@ For example:
   - SMS services
   - Cloud APIs for programmability: CLIs and underlying server APIs
 
-This suite covers most common cloud services.
+This suite covers most common cloud services in developers and hackers' eyes.
 
 ## Infrastructure-as-Code (IaC)
 
-Infrastructure as code originated from the need for collaboration between development and operations.
+Infrastructure as code maybe originated from the need for collaboration between development and operations.
 
 Due to security and access control requirements, developers often do not have direct server access privileges in practice. This makes debugging deployment issues extremely difficult for developers.
 
@@ -71,7 +71,7 @@ Additionally, in the classic workflow from code to deployment, code submitted by
 
 At this point, they need to agree on some documentation or instructions to guide the deployment process. Of course, as those who have done collaborative development know, most of the time no one writes or reads the docs. Sometimes when a version iterates, things break and the deployment method changes. This foreshadows something I'll mention later.
 
-So IaC emerged to **define or declare the deployment process and resource dependencies (dependency library versions, packaging methods, startup methods, server resources like networking and databases, logging) through configuration scripts/tools.** Using version control tools like Git brings scripted infrastructure definitions under version control. When you maintain the code in Git, it becomes GitOps.
+So IaC emerged to **define or declare the deployment process and resource dependencies (dependency library versions, packaging methods, startup methods, server resources like networking and databases, logging) through configuration scripts/tools.** Using version control tools like Git brings scripted infrastructure definitions under version control. When you maintain the code in Git, it becomes GitOps. So It converts abstract infrastructure as a kind of code snippets.
 
 Now, instead of coordinating with ops, config definitions allow developers who are also responsible for ops in DevOps to directly interface with servers, cloud, and CI/CD for business needs and requirements. Eliminating coordination overhead improves efficiency and speed.
 
@@ -95,47 +95,56 @@ If you are a new developer joining a company, you will normally directly access 
 
 So these are the main entry points for **internal personnel** to access the company's internal network. And it is **legitimate employee** VPN access. This is like a huge open city gate in a walled fortress, so impersonating an employee to get inside the large internal network is the best way. I doubt anyone wants to break through extremely thick walls to invade right?
 
-And as we see, major VPN products get "wholesale" SSLVPN vulnerabilities **every year** at a certain event.
+And as we see, major VPN products get "wholesale" vulnerabilities **every year** at a certain event. (In China. Ah you know. I can't describe more.)
 
-Of course, there is some security (verification measures) and some have unified authentication like CAS. Most provide SSO Login and may have other solutions. But these policies tend to vary by company. They provide unified authentication and authorization services for employees and external customers. Since infiltration is possible, security is usually strict here.
+Of course, there is some security (verification measures) and some have unified authentication like CAS. Most provide SSO Login and may have other solutions. But these policies tend to vary by company. They provide unified authentication and authorization services for employees and external customers. Since infiltration is possible, security is usually strict here. They just like a Gate with a lot of security guards.
 
 ### Inner or External Publisher
 
 This generally refers to homepage-like content of the company, mostly static hosted resources.
 
-Some companies also have CMS systems (dedecms, wordpress) or webplus site publishing systems for external resource display.
+Some companies also have some internal CMS systems (dedecms, wordpress) or webplus site cluster publishing systems for external resource display.
 
-These are typically used as public-facing platforms or internal messaging platforms. Nothing too special for external purposes, usually maintained regularly. Internal exposure is different. If external access is allowed, it's worth a close look. Sensitive info and an initial foothold may be available, like Bilibili's dedecms vulnerability from a few years ago.
+These are typically used as public-facing platforms or internal messaging platforms. Nothing too special for external purposes, usually maintained regularly. 
 
-But these often involve some specific business logic, not too important for this article or topic.
+Internal exposure is different. If its external access is allowed, it's worth a close look for hackers. Sensitive info leakage and an initial foothold may be available, just like Bilibili's dedecms issue from a few years ago.
 
-### Ignorable Access
+But these often involve some specific business logic in specific company, not too important for this article or topic. We should put on something 
 
-Of course, accidental exposure can also be extremely deadly. This includes but is not limited to: vulnerable internal network services, anonymous Samba, FTP, Git, etc. But these are all old news. More on this later.
+### Easily-Ignored Access
 
-Here I want to point out that accidental exposure can easily be caused by developers or DevOps wanting to cut corners. And it may involve things like **frp reverse proxies, temporary Nginx configs (or misconfigured ones)**. Key development-related content or services like API docs, design docs, monitoring dashboards, and even important creds like account passwords and access keys may be improperly exposed externally. The exposure or proxying could be temporary, but could also persist indefinitely online due to developer/maintainer negligence and oversight.
+Of course, accidental service exposure can also be extremely deadly. This includes but is not limited to: vulnerable internal network services, anonymous Samba, FTP, Git, etc. But these are all old news. More on this later.
 
-These subtle misconfigurations (SMB has different ports and protocols so is less likely to be checked), can be extremely difficult to detect given the massive scale of some sites and services. Even experienced security teams may focus more on testing application-layer services while overlooking these issues.
+Here I want to point out that accidental exposure can easily be caused by developers or DevOps wanting to cut corners. And it may involve things like **developer self used reverse proxies(FRP NPS), temporary Nginx configs (or misconfigured ones) even a NodePort in Kubernetes.**. Key development-related content or services like API docs, design docs, monitoring dashboards, and even important creds like account passwords and access keys may be improperly exposed externally. The exposure or proxying could be temporary, but could also persist indefinitely online due to developer/maintainer negligence and oversight. So that some big company make such kind of issue as a security red line.
+
+These subtle misconfigurations (Some service like SMB has different ports and protocols, This kind of http based content is less likely to be checked.), can be extremely difficult to detect given the massive scale of some sites and services. Even experienced security teams may focus more on testing application-layer services while overlooking these issues.
 
 I've had the privilege of seeing some penetration testing reports where business units focused heavily on application security issues like SQL injection vulnerabilities and did not mention configuration, etc.
 
-Of course, in the cloud era, cloud firewalls and load balancers can provide some protection (obstacles for hackers) by filtering and processing data. But they still cannot prevent attackers from impersonating normal admin maintenance operations.
+> maybe the developing itself is so tricky for them.
 
+Of course, in the cloud era, cloud firewalls and load balancers can provide some protection (obstacles for hackers) by filtering and processing data. 
+
+> But they still cannot prevent attackers from impersonating normal admin(or developer itself) maintenance operations. You can't deny your owner's order, right? So there is another part.
 ## Code Itself
 
 ### Code Init - Framework/Template Oriented
 
-As a developer, the next steps are usually to launch an IDE, initialize version control, import templates, create a code repository.
+So now Back to the context.
+
+As a developer, the next steps are usually to launch an IDE, initialize version control, import templates, create a code repository or clone other people's code and prepare the environment on your own computer.
 
 > IDE vulnerabilities basically don't exist, but can be compromised through phishing to inject backdoors. But that's not a targeted attack. Potentially tampering with code management and injecting common startup scripts from JETBRAINS or VSCode could work.
+> 
+> Developer tools with config is need to take notes. By poisoning some configuration files or break down the tools itself, They could have higher privilege to execute commands. So if you are a hacker, notes this. 
 
-This brings us to potential issues with templates and frameworks themselves. Of course, frameworks aim to facilitate creating other projects that then get applied to business use cases.
+This brings us to potential issues with templates and frameworks themselves. Of course, frameworks and templates aim to facilitate creating other projects that then get applied to business use cases.
 
 So barring any extremely poor practices, a basic initialized framework is unlikely to cause disastrous problems on its own. Attempted exploitation is also quite difficult. Truly damaging vulnerabilities reflect poorly on security staff for missing threats to many systems.
 
 > When writing this section, I was thinking about M3i Merz1's Spring framework vulns.
 
-The real vulnerabilities are introduced during code development when developers inadvertently introduce bugs or more seriously, security flaws. For example, using `${key}` instead of `#{key}` in fuzzy Java Mybatis queries leads to database injection (the former allows injection expressions).
+The real vulnerabilities are introduced during code development when developers inadvertently introduce bugs or more seriously, security flaws. For example, using `${key}` instead of `#{key}` in fuzzy Java Mybatis queries leads to database injection (the former allows injection OGNL expressions).
 
 These kinds of mistakes are easy to accidentally introduce during development.
 
@@ -164,7 +173,6 @@ This can easily lead to weak API authentication. This is extremely common among 
 Here I'll share an interesting technique I discovered:
 
 > Based on the above two points (Debug + Error messages), we can use a special technique I term "reverse debugging". Some Django programs with Debug Mode enabled can have Python throw errors in different locations by controlling the payload to trigger errors. This exposes more runtime code through Debug mode. Normal debugging locates bugs, while we reverse this to expose source code using bugs/errors.
-
 #### Weaknesses
 
 Common attacks include: [HACK APIs In 2021](https://labs.detectify.com/2021/08/10/how-to-hack-apis-in-2021/)
@@ -212,7 +220,6 @@ This allows us to inject our own controllable callback service and obtain platfo
 ## Codebase
 
 I divide the CodeBase into two categories here: one is version control like Git, which is common and basically exists everywhere. The second is the package library. Some companies have similar package management centers like Maven for more strict control and unified management of the code written and dependencies.
-
 ### Version Control Platform
 
 When you finish writing the code and commit it, the code will be stored in version control software like GIT SVN or code hosting platforms.
@@ -271,19 +278,38 @@ Of course now there are more viable options like Webhook (the Go one), which I t
 
 Something newer is Drone CI. A CICD featuring containers, in addition to scripts and the like, is often accompanied by a lot of Kubernetes and docker combined utilization. This part will continue in the next section.
 
+## Multi Environment Failure
+
+Most important part of cluster service, cloud service is service discovery and service bundle. For example, Normal web application + mysql + redis. 
+
+The bundle in Cloud Native could be used as a single micro-service that serves to customers with some single function or program. 
+
+In developer's eyes, Service discovery and service registering in Cluster or other cloud environment make the service bundled as one unit more easily.
+
+But cloud make hacker to exploit more easily. If we can know how the function works, what dependencies it used and where is it. Enumerate other service, discover service nearby by abusing cloud creds and platform apis is as connivance as developer itself. 
+
+Also service union or combination makes exploitable possibility higher. Some service itself could be safe. But some apis logic between services are conflict or vulnerable. 
+
+> example: 
+> 
+> 1. using CVE-2018-1002105. exploit trust between API service and Kubelet apis. Only API service or kubelet is not vulnerable at all. But both of them is vulnerable.
+> 2. Some weave scope is safe and limited external access. But when some service has Pod PortForwarding privs (may be for debug). It makes everything worse.
 ## Online Testing
 
-Testing is also an important part of the development process. And in order to be more similar to the real environment, there are usually publicly accessible online testing websites. There are usually words like test in the domain name. I want to divide this part into two sections: `Code Audit Testing` and `Online Testing Clusters`. Mainly the second part Online Testing (Clusters)
+Testing is also an important part of the development process. Debugging on cloud service is more difficult. Some developers focus more on Testing.
 
+And in order to be more similar to the real environment, there are usually publicly accessible online testing websites. There are usually words like test in the domain name. I want to divide this part into two sections: `Code Audit Testing` and `Online Testing Clusters`. Mainly the second part Online Testing (Clusters)
 ### Code Audit
 
 I haven't really encountered this kind of service. I've only seen Sonatype installed in the system once, and running as an automated testing service in the CICD, seeming to do static code checking and testing. (No in-depth research here, leaving a pit first.)
 
 Looking at the introduction and demo, it says it can ensure a certain code security and quality. Some vendors use this to ensure code reliability.
 
-Of course this thing can also execute commands (code). https://help.sonatype.com/repomanager3/integrations/rest-and-integration-api/script-api Even the official docs can see Unsafe at the beginning.
+Of course this thing can also execute commands (code). https://help.sonatype.com/repomanager3/integrations/rest-and-integration-api/script-api Even the official docs can see Unsafe at the beginning. 
 
 > But basically there are few code static detection. At most a scan and a code formatting lint or something
+
+> Something interesting is the documents are hacker read-only, lots of developers ignore the official documents and turn to Stackoverflow. (lol)
 
 ### Online Testing (Clusters)
 
@@ -295,7 +321,7 @@ Online testing is a point that can be easily overlooked during development, but 
 
 For developers, the online test environment provides a virtual environment similar to the production environment, mainly for pre-launch Debug, finding and eliminating Bugs before they affect the production environment, having more realistic data, and getting the gap between test and expected results. effect, help developers do a better job of development.
 
-> In human words it's rehearsal
+> Just like rehearsal of the show.
 
 Among them, resources, configurations, monitoring, etc. are basically the same or even the same as the official service, but the passwords are often weak passwords. At the same time, because it is not the production environment, debugging information is often more, more common and more frequent.
 
@@ -309,9 +335,9 @@ In addition, some of the test content in the test environment may partially flow
 
 Through these vulnerabilities or simple weak passwords, we can kick in the door of the other party's test environment and collect information. We can easily collect some of their preferences. Although this is not sensitive information in the production environment, discerning red team members can smell the scent in it. For example: the technology stack they like, the weak passwords or password habits they like (like do they prefer 123456 or 111111 or 888888 or prefer other things), test environment configuration/monitoring, etc. Passwords and the like may change, but password preferences won't change quickly. (Some people just like Chinese name PinYin + numbers (birthday or 123456) combinations). Reusing these collected things and reusing them in formal services or other company services will always bring you unexpected gains.
 
-I used to feel bad about hacking the other party's test environment, but after careful searching, the problems exposed by the test environment are often more and more sensitive.
+I used to feel bad about hacking the other test environment, but after careful searching, the problems exposed by the test environment are often more and more sensitive.
 
-In the test environment, we want to move laterally more to production and internal, so we need to pay more attention to public service information in the configuration (such as public databases, public configuration centers, AKSK), permission situations (whether there is transboundary access, etc.) and API documentation (which is difficult to change once finalized), mainly this kind of information that can be reused in other services. After all, the test environment itself is not of much value to the red team.
+In the test environment, we want to move laterally more to production and internal, so we need to pay more attention to "sharing data" like public service information in the configuration (such as public databases, public configuration centers, AKSK), permission situations (whether there is transboundary access, etc.) and API documentation (which is difficult to change once finalized), mainly this kind of information that can be reused in other services. After all, the test environment itself is not of much value to the red team.
 
 ## Configs/Creds
 
@@ -319,7 +345,11 @@ In the test environment, we want to move laterally more to production and intern
 
 #### Cross Service
 
-Some companies often have a Config Server service that accesses and distinguishes the credential information and content each service needs through a Creds, which can provide the resources the service needs. If configured properly, the exposed content is generally not conducive to further lateral movement. This breakthrough point is generally to look for data between businesses. It is often possible to skip over them. These places are easy to obtain high privileges due to laziness. For example, services that share database accounts, **share some resource credentials and API call KEYs**. This kind of service crossover is often simpler and more effective.
+Some companies often have a Config Server service that accesses and distinguishes the credential information and content each service needs through a Creds, which can provide the resources the service needs. Even some external data source or API service.
+
+If configured properly, the exposed content is generally not conducive to further lateral movement. This breakthrough point is generally to look for data between businesses. It is often possible to skip over them. These places are easy to obtain high privileges due to laziness. 
+
+For example, services that share database accounts, **share some resource credentials and API call KEYs**. This kind of service crossover is often simpler and more effective.
 
 #### Man In the Middle
 
@@ -353,6 +383,7 @@ There are related exploitation and checking tools for such leaks.
 
 But I still think the feasibility of this approach is very low, because leaks may not necessarily be found, not all keys can be used, it is also possible that the programmer's security awareness is very high or does not have an account on such platforms at all. Of course platforms like Github also have leak detection and leak warning emails. For various reasons, if you rely on this, it is very likely to end up fruitless. This is also why I planned to delete the content in this area before.
 
+> **Attack Code PART 3 - Cloud Involved in Codes**
 # When Cloud involved
 
 How will our previous attack points change when cloud technology becomes popular as a new technology stack?
