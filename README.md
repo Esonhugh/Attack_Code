@@ -1,223 +1,197 @@
-
 # Intro
 
-这篇文章算是(?)纯纯的引入性质文章, 如果您是熟悉这些的人, 或是有过入侵经验的大懂懂, 可以简单的看看结论和内容, 开拓一下思维, 一笑而过, 当个笑话. 
+This article is more of an(?) introductory article. If you are already familiar with these topics or have prior penetration testing experience, feel free to briefly review the conclusion and content, expand your thinking, have a laugh, and move on.
 
-当然, 如果有对文本有些看法或者有些想要补充的, 可以直接写在下面的评论区, 也可以直接 [mail 我](mailto:cloud-sec-from-blog@eson.ninja). 
-PS: 当然记得说明来意. 文章不会有具体的入侵操作的实际内容与执行的命令, 主要是分享所谓的思路.
+Of course, if you have any thoughts or want to add something to the text, you can leave a comment below or directly [email me](mailto:cloud-sec-from-blog@eson.ninja).
+ PS: Of course, explain your intention. The article does not contain any actual invasive operations or execution commands, mainly sharing the so-called thought process.
 
-本文综合了我 **几次在梦里渗透测试时候的发现** /doge
+This article summarizes some of my **discoveries from penetration testing in my dreams** /LoL.
 
 > Author: Esonhugh
-> 
+>
 > This is the whole Part of "Attack 'Code'"
-> 
+>
 > Intro Cloud Security for you And Show some thing funny i found.
-> 
-> 我会尽量简化我的表达, 使得信息密度更高
+>
+> I will try to simplify my expression to increase information density
 
-Thank u for your reading.
+Thank you for reading.
 
+> **Attack Code PART 1 - Intro And Funny Weakness**
 
+## What You Need Know - MISC
 
-> # Attack Code PART 1 - Intro And Funny Weakness
+### Cloud
 
-# What You Need Know - MISC
+What is [cloud computing](https://en.wikipedia.org/wiki/Cloud_computing)?
 
-## Cloud 
+**Through paying and the internet, shared software and hardware resources and information can be provided on demand to various end devices and other devices for computing and resources, using the computer infrastructure of one or more service providers as a service. This is the "cloud" we see.** (Everything as a Service. EaaS, XaaS)
 
-什么是 [云计算](https://en.wikipedia.org/wiki/Cloud_computing)?
+Of course, I don't intend to use complex definitions that are irrelevant to the topic. So I think I can redefine this from the perspective of a developer or DevOps:
 
-**通过付费和互联网, 使得共享的软硬件资源和信息可以按需求提供给计算机各种终端和其他设备, 使用某个或者多个服务商提供的电脑基础建设用作于计算和资源.** 这便是我们所看到的 **云**. (Everything as a Service. [EaaS,aaS])
+Leading companies like Alibaba (Aliyun), Huawei (Huawei Cloud), Google (GCP), and Amazon (AWS) **provide a suite of products that cover almost the entire development lifecycle for small and micro enterprises, individual users, and even students.**
 
-当然复杂的定义并非我的意愿, 搬弄众说周知的概念脱离主题也显得文章垃圾. 
+In this article, we focus more on **development**-related content, so the following aspects are commonly listed:
 
-所以我想我可以这样从一个开发者或是运维者 (DevOps) 的方面去重新定义.
+For example:
 
-各位大厂牵头, 诸如阿里(aliyun) 华为(huawei cloud) Google(GCP) Amazon(AWS) 为小微企业, 个人用户, 甚至是学生**提供一套几乎覆盖完整开发生命周期的生态性质的产品**. 
+- Code
+  - Code hosting services like Tencent Coding Platform and various alternatives (not very common though)
+- Data storage
+  - Object storage like OSS  AWS S3
+  - Database management like RDS (turnkey Mysql, Redis services for unified management)
+- Deployment
+  - Virtual Server products like ECS (in AlibabaCloud) EC2 (in AWS)
+  - Middleware or Gateways
+  - Message queues
+  - CDN caching for efficient content delivery
+  - Security products like DDoS protection and cloud firewalls
+- More Virtualization 
+  - Container orchestration like ready-to-use Kubernetes clusters (almost all have this)
+  - Storage virtualization like virtual cloud disks
+  - Network virtualization like SDN for customizable internal networks, VPCs, domain names, IPs
+  - Container image storage for uploading and managing images
+- Other peripheral services
+  - Compute services: GPU servers for big data and AI researchers
+  - Serverless: Proxy compute to distribute workload without buying servers to save costs
+  - Ops-related: Log management, protection, simple ops, domain and website hosting, cloud load balancing
+  - IoT device connectivity
+  - SMS services
+  - Cloud APIs for programmability: CLIs and underlying server APIs
 
-在本文中我们侧重于 **开发** 相关内容, 所以下面列出了常见的几个方面:
+This suite covers most common cloud services in developers and hackers' eyes.
 
-例如
+## Infrastructure-as-Code (IaC)
 
-- 代码 
-  - 诸如 代码托管 (这里有 腾讯 Coding 平台) 其他也有各种代替 不过不多见
-- 数据存储
-  - 对象存储 OSS COS
-  - 数据库管理 RDS (Mysql redis 服务即买即用 统一管理)
-- 部署
-  - 服务器 ECS 这类产品 
-  - 中间件
-  - 消息队列
-  - CDN 缓存 高效的内容分发
-  - 安全产品 诸如 DDoS 防护 云防火墙
-- 虚拟化
-  - 容器编排 比如直接购买的 K8s 集群 (这种基本上都有)
-  - 存储虚拟化 虚拟云盘存储
-  - 网络虚拟化 SDN 软件定义网络 自定义内网 VPC 域名 IP
-  - 容器镜像存储 上传 管理
-- 周边的其他服务
-  - 计算服务: GPU 服务器 为大数据和人工智能学者研究者 提供服务
-  - Serverless: 无服务 计算代理分摊计算压力 不购买服务器 可以节约成本
-  - 运维相关: 日志管理 防护 简单运维 域名网站托管 云负载均衡
-  - IoT 设备联系
-  - 短信服务
-  - 云 API 化 可编程化: cli 程式和其背后的 API 服务器
+Infrastructure as code maybe originated from the need for collaboration between development and operations.
 
-这一套内容, 涵盖了几乎大部分的常见云服务.
+Due to security and access control requirements, developers often do not have direct server access privileges in practice. This makes debugging deployment issues extremely difficult for developers.
 
-## Infrastructure-as-Code(IaC)
+Additionally, in the classic workflow from code to deployment, code submitted by developers often has to go through "inspection", "review", "testing", and "release" before reaching the deployment side. So developers don't really have access to production environments.
 
-基础架构即代码. 起初, 这个诞生于一种开发和运维协同的需求.
+At this point, they need to agree on some documentation or instructions to guide the deployment process. Of course, as those who have done collaborative development know, most of the time no one writes or reads the docs. Sometimes when a version iterates, things break and the deployment method changes. This foreshadows something I'll mention later.
 
-因为安全生产和权限控制的需要所以开发人员在实际上很可能是没有服务器 Access 权限的. 那么开发想要确定部署的问题( Debug ), 就会变得尤为困难.
+So IaC emerged to **define or declare the deployment process and resource dependencies (dependency library versions, packaging methods, startup methods, server resources like networking and databases, logging) through configuration scripts/tools.** Using version control tools like Git brings scripted infrastructure definitions under version control. When you maintain the code in Git, it becomes GitOps. So It converts abstract infrastructure as a kind of code snippets.
 
-其次, 在最经典的从代码到上线的流程中, 开发者提交的代码往往需要经历 "检查" "Review" "测试" "发版*(集成)" 才能到达部署端. 所以开发其实对线上环境属于是鞭长莫及.
-
-在这个时候, 他们需要共同约定一个文档或者说明, 根据这个指示来进行部署操作. 当然, 真的协作开发过的懂哥都知道, 大多数情况下, 文档是真的没人写没人看. 有时候版本一迭代, 坏了, 部署方式变了. 这里微微留一个伏笔.
-
-于是 IaC 这种应运而生, **通过配置类或者简单脚本类的工具, 定义或者声明一个部署的过程和依赖的资源(依赖库版本, 打包方式, 启动方式, 服务器资源(网络,数据库),日志)**, 就成为了一种沟通的方式. 如果引用了诸如 Git 这种版本控制工具, 那么这种文本类型的配置也享受了版本控制的便利. 当你把 Code 维护在 Git 里, 就成了 GitOps.
-
-当然之后, 配置方法也不需要和运维进行沟通了, 在 Devops 中, 开发即运维, 开发人员也负责运维, 通过现代化的运维监控软件, 使得开发者直接面向服务器, 云和 自动集成-自动部署 ( CICD ) 实现业务和需求, 由于没有沟通协同上的成本, 所以效率和速度更快了.
+Now, instead of coordinating with ops, config definitions allow developers who are also responsible for ops in DevOps to directly interface with servers, cloud, and CI/CD for business needs and requirements. Eliminating coordination overhead improves efficiency and speed.
 
 ## Wrap up
 
-需要注意的是这一切的一切, 本质目的是 **解决开发相关的其他困难**, 即解决部署的困难(普通开发者不能直接买服务器放家里吧), 维护和配置的困难(要公网 IP 要配网吧), 也是为了让大多数的程序员更专心于业务代码的实现, 忽略其他的不必要的内容. 也使得企业或者组织的分工更为精细化, 权限更为的分散易控. (当然身为企业 还有其他的利弊, 但是这已经超过本文的主题了.)
+It's important to note the core purpose is to **solve other difficulties related to development**, namely deployment difficulties (regular developers can't buy servers and put them at home), maintenance and configuration difficulties (need public IPs and networking configured), and to allow most programmers to focus more on business code implementation while ignoring unnecessary complexity. It also enables more granular division of labor and access control for organizations and companies. (Of course there are also pros and cons for enterprises, but that exceeds the scope of this article.)
 
-我看到, 开发的方式和工具, 正在迎来或者正在经历一场新的革命.
+I see that the tools and methods of development are undergoing a new revolution.
 
-# How Attack Vector Included in DEV
+# How Attack Vectors Are Introduced in DEV
 
 ## Intro
 
-这里简单的以开发视角进行开发者开发周期作为基础的路线和视角, 简单总结一下, 一个产品或者一个服务脆弱点的引入位置.
+Here I briefly summarize the entry points for vulnerabilities from the perspective of a developer's workflow.
 
 ## Access Company
 
 ### Accessing and Authorization
 
-如果你是一个加入的公司的新的开发人员, 那么一般会直接进入公司的内网 (物理接入), 但是如果公司是海外或者异地, 那么就需要费一些劲道了, 这时候出现了 VPN 这类接入工具 (接入云内网云VLAN), 或和着 SwitchHosts 这类 Hosts 修改工具来进行 DNS 的解析.
+If you are a new developer joining a company, you will normally directly access the internal network (physically), but if the company is overseas or remote, some effort is required. This is where remote access tools like VPN (accessing cloud internal networks/VLANs) or SwitchHosts (Hosts file modification tools for DNS resolution) come in.
 
-所以这些是在外的 **公司内部人员**进入公司内网的主要入口. 而且是**合法合规**的员工 VPN 的接入. 这个玩意的价值相当于在铜墙铁壁的城墙上敞开的大城门, 所以从装作员工混进去是最好的进入公司大内网的办法. 应该没有人想要打破巨厚无比的城墙闯入的吧.
+So these are the main entry points for **internal personnel** to access the company's internal network. And it is **legitimate employee** VPN access. This is like a huge open city gate in a walled fortress, so impersonating an employee to get inside the large internal network is the best way. I doubt anyone wants to break through extremely thick walls to invade right?
 
-而且你看每年 H 开头的大型活动中某厂商就年年**"被批发" SSLVPN 洞**, 从中就可见一斑了.
+And as we see, major VPN products get "wholesale" vulnerabilities **every year** at a certain event. (In China. Ah you know. I can't describe more.)
 
-当然, 有大门必然还有一些保安 (验证措施), 还有些具有统一验证的 CAS 啦. 不少是以提供 SSO Login 为主, 也见过有其他的方案的. 但是这些策略大多数是因公司而异. 提供给员工和外来客户的统一验证鉴权之类的服务. 同时也正因为有混进去的可能, 所以这里通常会严格把手.
+Of course, there is some security (verification measures) and some have unified authentication like CAS. Most provide SSO Login and may have other solutions. But these policies tend to vary by company. They provide unified authentication and authorization services for employees and external customers. Since infiltration is possible, security is usually strict here. They just like a Gate with a lot of security guards.
 
-### inner or external Publisher
+### Inner or External Publisher
 
-这里说的一般是公司的首页一类的, 其中大部分是静态的资源托管. 
+This generally refers to homepage-like content of the company, mostly static hosted resources.
 
-不过有些公司还会有诸如 CMS (dedecms, wordpress) 系统, 甚至是 webplus 站群发布作为对外的资源展示. 
+Some companies also have some internal CMS systems (dedecms, wordpress) or webplus site cluster publishing systems for external resource display.
 
-这种一般是网站的大门或者内部消息的发布平台. 对外没什么特殊的, 都是定期有人维护的东西. 对内就不一样了. 如果扫到对外开放可以认认真真看看. 比如 前两年的 b 站 dedecms 暴露. 可能可以看到敏感信息, 打下来也是一个 foothold.
+These are typically used as public-facing platforms or internal messaging platforms. Nothing too special for external purposes, usually maintained regularly. 
 
-不过这些往往涉及一些具体业务, 在本文中不是很重要. 和主题略远.
+Internal exposure is different. If its external access is allowed, it's worth a close look for hackers. Sensitive info leakage and an initial foothold may be available, just like Bilibili's dedecms issue from a few years ago.
 
-## Before Code
+But these often involve some specific business logic in specific company, not too important for this article or topic. We should put on something 
 
-### Project management
+### Easily-Ignored Access
 
-作为开发人员, 在一个服务处于一种什么都没有的初始情况下, 会收到 诸如入职指南, 业务需求, 设计文档一类的杂项文件. 这些可能是存放在例如 禅道 这种, 项目管理工具的下面, 或者说企业邮箱之类的. 
+Of course, accidental service exposure can also be extremely deadly. This includes but is not limited to: vulnerable internal network services, anonymous Samba, FTP, Git, etc. But these are all old news. More on this later.
 
-当一个渗透测试成员还可能以某种方式接触到了对方的项目管理, 清单, 设计和需求文档一类的东西. 基本可以看到一个项目的大概面貌. 这里留下的信息会为渗透测试人员提供更多的相关产品开发测试的机密内容, 包括但不限于 多了几个 BUG 啊 什么 BUG 啊, 有哪些漏洞啊之类的敏感信息. 还有可能会有测试账号什么的(这类也可以直接用来进行线上测试之类的东西). 
+Here I want to point out that accidental exposure can easily be caused by developers or DevOps wanting to cut corners. And it may involve things like **developer self used reverse proxies(FRP NPS), temporary Nginx configs (or misconfigured ones) even a NodePort in Kubernetes.**. Key development-related content or services like API docs, design docs, monitoring dashboards, and even important creds like account passwords and access keys may be improperly exposed externally. The exposure or proxying could be temporary, but could also persist indefinitely online due to developer/maintainer negligence and oversight. So that some big company make such kind of issue as a security red line.
 
-> 如果对方有定期的渗透测试的习惯或者是安全性质的报告, 那这种根本就是捡到宝了.
+These subtle misconfigurations (Some service like SMB has different ports and protocols, This kind of http based content is less likely to be checked.), can be extremely difficult to detect given the massive scale of some sites and services. Even experienced security teams may focus more on testing application-layer services while overlooking these issues.
 
-当然我们可以进行一个"中间人", 监听甚至是伪造相关的信息, 来获得更大的权限和内容.
+I've had the privilege of seeing some penetration testing reports where business units focused heavily on application security issues like SQL injection vulnerabilities and did not mention configuration, etc.
 
-> 这里额外提及一下 上小章的 SSO 这种统一验证方法在具有 "新项目" 测试账号情况下导致的常见的鉴权弱点.
+> maybe the developing itself is so tricky for them.
+
+Of course, in the cloud era, cloud firewalls and load balancers can provide some protection (obstacles for hackers) by filtering and processing data. 
+
+> But they still cannot prevent attackers from impersonating normal admin(or developer itself) maintenance operations. You can't deny your owner's order, right? So there is another part.
+## Code Itself
+
+### Code Init - Framework/Template Oriented
+
+So now Back to the context.
+
+As a developer, the next steps are usually to launch an IDE, initialize version control, import templates, create a code repository or clone other people's code and prepare the environment on your own computer.
+
+> IDE vulnerabilities basically don't exist, but can be compromised through phishing to inject backdoors. But that's not a targeted attack. Potentially tampering with code management and injecting common startup scripts from JETBRAINS or VSCode could work.
 > 
-> 1. 在测试情况下, 为了开发可能会为了避免麻烦, 很多测试账号的登录都不需要验证 2FA. 比如手机号短信验证. 这直接导致了测试账号的时候可以通过测试平台的单点登录横向到其他服务\[可以是生产服务\].
-> 2. 在测试账号时, 一般都会有诸如 VIP/会员 的东西, 甚至可能有非常离谱的高级权限 \[比如一个小管理\]. 在 SSO 的加持下, 不仅可以成功认证其他的服务, 通过API 对其他服务进行测试和利用, 甚至滥用自身的高级权限对服务进行修改.
-> 
-> 这种脆弱点, 常常发生在具有开发较为大型程序或者网站的公司中.
-> 接着我们可以着眼于文件服务, 共享服务一类的服务进行更多的信息探查和收集. 在渗透的~~闲暇时刻~~, 翻看这些内容总能有意想不到的收获.
+> Developer tools with config is need to take notes. By poisoning some configuration files or break down the tools itself, They could have higher privilege to execute commands. So if you are a hacker, notes this. 
 
-这些信息对于获取**一个公司的组织架构**, **公司的成员信息**, **高权限用户或者管理员**具有很好的指示性作用和钓鱼价值. 为下一步行动提供一定的方向.
+This brings us to potential issues with templates and frameworks themselves. Of course, frameworks and templates aim to facilitate creating other projects that then get applied to business use cases.
 
-### Office
+So barring any extremely poor practices, a basic initialized framework is unlikely to cause disastrous problems on its own. Attempted exploitation is also quite difficult. Truly damaging vulnerabilities reflect poorly on security staff for missing threats to many systems.
 
-这里主要想说的是相关 政务系统 OA 财务系统 邮件系统 Exchange 等等办公系统. 这些是企业的平时工作的主要系统, 往往具有高度的机密性. 这些是可以检查的目标, 采集到的信息往往具有很大利用面. 
+> When writing this section, I was thinking about M3i Merz1's Spring framework vulns.
 
- 当然只是简答一提. 也和程序员基本没太大关系 和开发也是扯远了.
+The real vulnerabilities are introduced during code development when developers inadvertently introduce bugs or more seriously, security flaws. For example, using `${key}` instead of `#{key}` in fuzzy Java Mybatis queries leads to database injection (the former allows injection OGNL expressions).
 
-### Ignorable Access
+These kinds of mistakes are easy to accidentally introduce during development.
 
-当然意外的暴露是也是非常致命的. 包括但不限于易受攻击的内网服务, 匿名 Samba, FTP, git 等. 不过这些已经是老生常谈了. 这里不说, 下一段再说.
-
-这里想要指出的意外的暴露很可能是开发人员或者开发运维人员为图谋省事导致的. 而且很可能伴随诸如 **frp 反代, Nginx 临时配置 (或者带有错误的配置)**. 错误地将诸如 API 文档, 设计文档, 监控面板, 乃至是账号密码 AKSK 等等重要的开发相关的内容或者服务暴露在外. 这些暴露或者代理可能是临时的, 也有可能会因为开发者或者维护者的遗忘等原因导致永久的留在了网络上.
-
-这些很不起眼错误配置 (SMB 一类具有不同的端口和协议 这些 HTTP 内容相对不容易成为检查的重点), 对于一个具有庞大的网站群来说, 是极其不容易被察觉的. 哪怕是经验丰富的安全部门, 也可能更注重于测试应用向的服务, 而忽略掉这些问题. 
-
-我有幸看过部分渗透测试报告, 他们的部分业务部常常专注于 SQL 注入这种应用安全层面的安全性问题, 对于配置等等并没有提及.
-
-当然在云时代的云防火墙和负载均衡, 在这些方面可以起到一定的防护作用, (对 Hacker 来说就是阻碍嘛), 能够部分的对数据进行过滤和处理. 不过他们依旧不能避免诸如黑客冒充(或者接管)正常管理员的维护操作.
-
-## Code itself
-
-### Code init - framework/template oriented
-
-作为开发人员, 接下来应该是 IDE, 然后创建项目, 初始化版本控制, (引入模版) 并且创建代码仓库.
-
-> IDE 中的脆弱点, 基本不太存在, 但其实也可以通过钓鱼的方法, 类似 破解后植入后门. 但是这种攻击不具有专一性. 或者污染代码管理, 参杂一些常见的 JETBRAINS 或者 vscode 的启动脚本利用.
-
-在这里就引入了模版和框架本身的问题. 当然模板和框架本身的目的是用来更加方便的创建其他的项目, 然后运用到业务中的. 
-
-所以相对而言, 只要不是很离谱, 光光一个初始的框架基本不足以引起毁灭性的问题. 其利用也是相当困难的. 如果真的引起了, 只能说恭喜, 咱们安全员又有饭吃了, 这必将是一个威胁大量系统的漏洞. 
-
-> 写这里的时候我在想 m3i 梅子酒师傅的 spring 洞. 
-
-真正引入漏洞的位置应该是在代码编写的过程中, 开发人员在不经意间, 引入一些 BUG 或者 更为严重的漏洞.比如把 Java Mybatis 的模糊查询时候, 把 `#{key}` 写成 `${key}` 导致的数据库注入这些 (后者允许注入表达式)
-
-这些是很容易开发者在开发的时候意外导致的错误.
-
-> 当然, 反过来思考, 如果我们想要测试一个框架的问题或者漏洞, 我们其实应该在项目开发的早期代码中进行寻找. 前期为了便于开发测试, 不会引入过多的内容, 更多是关注核心业务逻辑. 代码在安全上做的努力往往并不是非常的严密. 不过可测试的点位也不是很多. 当搭好了一个程序的基本的结构和一部分内容的时候, 测有可测, 也很容易发现框架实现上的问题和 BUG. 开发或许并不是很注意, 但是很容易成为安全人员入手的点.
+> Looking at this conversely, if we want to test potential framework issues or vulnerabilities, we should look in early project code. Few extra safeguards are added early on when focusing on core business logic implementation. Security hardening efforts are often not rigorous initially. But there are limited testable surface areas. Once basic program structure and some features are implemented, more potential bugs and flaws in framework implementation can be discovered and may be overlooked by developers. These reachable spots are ripe for security researcher exploitation.
 >
-> 嗯 因为我的 CVE 就是这里出来的.
+> This is where my CVE came from.
 
-### Hacking API - weak authorization
+### Hacking API - Weak Authorization
 
-现在很多网站的设计采用了类似前后端分离的理念, 前端一个 (Vue/React) 框架直接糊一个 WebApp 后端一个 API 服务. (不分离的 PHP 那种还是越来越少见了, 当然还是有的.)
+Many modern website designs adopt concepts like front-end/back-end separation, with a front-end framework directly generating a web app and back-end API services. (Monolithic PHP is becoming less common, but still exists.)
 
-这其实很容易导致 API 接口的弱鉴权. 这种确实非常常见, 在经验不足的开发人员中这类问题是出奇的多. 我认为其主要原因, 应该是 "因为 API 并不是很好的能被枚举的物品而导致的隐蔽性".
+This can easily lead to weak API authentication. This is extremely common among inexperienced developers. I think the main reason is the "hidden" nature of APIs that aren't easily enumerable.
 
-> 这里的弱鉴权是指, 其实是有鉴权但是鉴权逻辑不完善, 比如说 校验了是否为登陆用户, 但是没有对权限做良好分离 (可以导致垂直或者水平越权), 这种垂直越权在管理的接口中可以很容易被发现.
+> Here, weak authentication means authentication logic exists but is flawed, for example only checking if the user is logged in without proper permissions separation (can lead to vertical or horizontal privilege escalation). Vertical escalation in admin interfaces can be easily discovered.
 
 #### API Exposure
 
-> 当然 凡事是有例外的, 比如: 
-> - 不完备的前端代码混淆或泄漏 尤其是 Webpack:// sourcemap 导致的 意外泄漏.
-> - 对外暴露了 Swagger api document 或者其他可能导致泄漏的 api 文档和 调试工具(被 Hacked YAPI (这种存在 RCE 可能)等). 
-> - 被入侵的开发人员之间的通讯工具, 比如 项目管理评论等.
-> - 开启了 Debug Mode 导致的接口意外暴露, 这些往往会伴随着更为严重的部分代码泄漏,(这部分代码泄漏可以参考本章节上面一部分.) 比如 Django Debug mode. 
-> - 报错提示. (服务器对于有些请求 不存在的时候返回 404 存在的时候 参数不足或者方法不对是 40X 或者 50X 在提示信息中可能存在参数的名称或者类型, 甚至是错误的暴露了栈)
+> Of course there are exceptions, such as:
+>
+> - Incomplete front-end code obfuscation/leakage, especially Webpack sourcemaps leading to accidental leakage.
+> - Exposed Swagger docs or other API docs/debugging tools (hacked YAPI instances with RCE potential).
+> - Compromised developer communications like project management comments.
+> - Accidental exposure due to enabled Debug Mode, often accompanied by more serious partial code leakage. Django Debug mode enables this.
+> - Error messages. (404 for non-existent resources, 40X/50X for incorrect params/methods may reveal param names, types, or even stack traces).
 
-这里说说我的发现.
+Here I'll share an interesting technique I discovered:
 
-> 根据上面两点(Debug+报错) 我们可以用上一种特殊的技巧. 我称之为 反向调试
-> 某些开启 Debug mode 的 Django 程序, 可以通过控制报错的位置, 定制对应的 payload 使得可以控制 Python 在不同的地方进行报错, 使得 Debug 更多地暴露出运行的代码. 
-> 调试是为了确定 Bug 在哪里, 而我们是反过来通过 Bug 来进行源码的暴露.
+> Based on the above two points (Debug + Error messages), we can use a special technique I term "reverse debugging". Some Django programs with Debug Mode enabled can have Python throw errors in different locations by controlling the payload to trigger errors. This exposes more runtime code through Debug mode. Normal debugging locates bugs, while we reverse this to expose source code using bugs/errors.
+#### Weaknesses
 
-#### Weakness
+Common attacks include: [HACK APIs In 2021](https://labs.detectify.com/2021/08/10/how-to-hack-apis-in-2021/)
 
-常见的操作有: [HACK APIs In 2021](https://labs.detectify.com/2021/08/10/how-to-hack-apis-in-2021/)
+Returning to API authentication, APIs are public interfaces for clients to call, so identifying specific callers is extremely difficult. Multiple client types (browsers can be clients too) often exist. Generating unique tokens is commonly used to authenticate servers.
 
-说回我们的 API 鉴权. API 因为是公开对外让 Client 进行调用的东西, 而对应的来源并不是很能确定. 常常可能有多种不同的 Client (Client 也可以是 Browser). 确定具体的调用对象难度就非常的高, 通常采用多创建一个 Token 来对本 Server 单独验证. 
+> Specific solutions should fit the use case.
 
-> 这里具体的方案应该按照实际情况而定.
+Many developers disable authentication for testing or simply don't care, thinking there's no harm (malicious laziness).
 
-很多开发为了方便测试功能或者纯纯觉得没关系无所谓(警惕恶意摆烂) 
+This often leads to serious unauthorized access and information leakage or injection issues. More commonly, it results in horizontal and vertical privilege escalation (very easy with 3+ permission levels).
 
-很多时候会忽略这里相关的鉴权, 可能是交给 Auth 的(抽象出来的 Server 中间件) 或者干脆不鉴权了.
+[RBAC](https://en.wikipedia.org/wiki/Role-based_access_control) is outside this article's scope.
 
-这里会导致很严重的 未授权访问 + 信息泄露 或者 注入问题 , 当然更为常见的是导致水平越权和垂直越权(通常在 3 个以上的权限级别的情况下就很容易出现这种问题. [RBAC](https://zh.wikipedia.org/zh-tw/%E4%BB%A5%E8%A7%92%E8%89%B2%E7%82%BA%E5%9F%BA%E7%A4%8E%E7%9A%84%E5%AD%98%E5%8F%96%E6%8E%A7%E5%88%B6) 不在讨论范围内.)
+Weak authentication can also stem from incorrect validation implementations.
 
-脆弱的鉴权还有一个 问题是不正确的验证实现
+The SSO example doesn't fall under this - it's designed that way.
 
-这里上面 SSO 不算是这种问题 因为设计出来本来就是这样的
-
-在我举一个 OAuth 的例子 在验证的时候 Redirect 没有严格限制 也没有参数
+As an example, OAuth implementations may allow arbitrary redirect URIs without strict parameter validation.
 
 ```mermaid
 sequenceDiagram
@@ -237,265 +211,293 @@ sequenceDiagram
 	Hacker ->> User: Act as third party.
 ```
 
-比如允许你任意跳转 这样我们可以写入一个我们自己可控的服务 然后获取到平台的 Token. 
-接下来我们可以对用户伪装成第三方服务提供一些服务等 伪装用户从可信任平台获取用户信息 伪装用户请求第三方服务
+This allows us to inject our own controllable callback service and obtain platform tokens, then impersonate users to spoofed third-party services to gather user info, and finally impersonate users to request data from real third-party services.
 
-> 尤其是有些服务是你必须完成的 ”打卡“ 服务, 这种滥用往往会导致致命的效果.
+> This can have devastating effects, especially for mandatory "check-in" services.
 
-> # Attack Code PART 2 - Common Develop Service
+>  **Attack Code PART 2 - Common Develop Service**
 
 ## Codebase
 
-CodeBase 在这里我分为两类: 一类是 Git 这种 版本控制, 这种比较常见 也是基本都存在的. 第二种是 package library, 有些公司具有类似的 Maven 包管理中心. 对编写的代码和依赖做更为严格的控制和统一的管理.
-
+I divide the CodeBase into two categories here: one is version control like Git, which is common and basically exists everywhere. The second is the package library. Some companies have similar package management centers like Maven for more strict control and unified management of the code written and dependencies.
 ### Version Control Platform
 
-当你写完代码, 进行提交, 代码就会被存到 GIT SVN 一类的版本控制软件或者代码托管平台. 
+When you finish writing the code and commit it, the code will be stored in version control software like GIT SVN or code hosting platforms.
 
-这里也是渗透测试人员可以仔细搜寻的脆弱点或者敏感区域.
+This is also a place where penetration testers can carefully search for vulnerabilities or sensitive areas.
 
-常见的有 Github 等公开平台的 私有项目 或者 Gitlab 自建 ( GItea 等 ) 甚至是云厂商的 一站式 Devops 平台的 Code Space. 
+Common ones are private projects on public platforms like Github, or self-built Gitlab (GItea, etc.), or even cloud vendors' one-stop Devops platforms' Code Space.
 
-> 这里稍微提一下隔壁腾讯云的 Coding 平台.
-> 
-> 是腾讯云的 一站式 Devops 平台中的一环, 也是其中的代码托管平台. 他在 e.coding.net.
+> Here I'll briefly mention Tencent Cloud's Coding platform.
+>
+> It is part of Tencent Cloud's one-stop Devops platform and is also its code hosting platform. It's at e.coding.net.
 
-这是企业的代码资产中最最核心的部分, 针对这些东西的利用和漏洞也是数不胜数, 尤其是 GITLAB, 所以现代企业往往都会在内网建立这类的代码托管. 并且正确的安全策略应该是禁止外网访问并且加上强验证强访问控制的, 并且需要注意安全性问题, 及时提供补丁. 比如 2FA.
+This is the most core part of an enterprise's code assets. The utilization and vulnerabilities of these things are countless, especially GITLAB. Therefore, modern enterprises often build such code hosting internally. And the correct security policy should be to prohibit external access and add strong verification and strong access control, and pay attention to security issues and provide patches in time. For example, 2FA.
 
-针对代码本身的审计, 硬编码, 成熟的配置文件 这些属于是最基本最基本的攻击面. 就不重复了.
+For code auditing itself, hardcoded, mature configuration files, etc., these are the most basic attack surfaces. I won't repeat them here.
 
-Git 中也会存有大量的注释 or 文档信息. (很多开发都那么干) 这些暴露出来的额外信息也是需要检查的. 比如说 某些 IP 下具有数据库资产, 哪些是测试环境, 哪些是是开发环境, 在 Gitlab snippets 和 WIKI 可能会留存一些开发或者维护信息之类的东西. (当然大多数情况是不会去使用的) 
+Git will also contain a lot of commentary or documentation information. (Many developers do that) The exposure of this additional information also needs to be checked. For example, some IPs have database assets, which are test environments, which are development environments, and some maintenance information may be left in Gitlab snippets and WIKIs. (Of course most cases will not use them)
 
-同样 Git log 中的历史也为攻击者表明了开发者个人信息. 或许在社会工程学钓鱼等等方面会做到更近一步的利用
+Similarly, the history in Git log reveals developer personal information to the attacker. It may lead to further utilization in social engineering phishing and so on.
 
-此外 拿下代码控制平台, 对对方代码进行审计和调试, 常常也是安全人员喜欢做的事情之一. 这意味着, 如果有更多的地方运用了这些代码 (或是组件), 安全人员可能会对这些漏洞进行复用, 再拿下更多的目标, 获取到更多的代码, 形成一个正反馈的循环.
+In addition, taking control of the code control platform and auditing and debugging their code is often one of the things security personnel like to do. This means that if more places use this code (or components), security personnel may reuse these vulnerabilities to take down more targets, get more code, and form a positive feedback loop.
 
 ### Package Library
 
-较为大型的公司常常会有属于自己的包管理工具. 之前看到有报告说可以进行下毒. 不过我并不是很懂这里应该怎么去 Do Some Evil. (思路不够开阔)
+Relatively large companies often have their own package management tools. I saw reports before that they could be poisoned. But I don't really understand how to Do Some Evil here. (Lack of imagination)
 
-并且我只是遇到过一次而已. 当时遇到的是一个 JAVA 的 MAVEN 私服, 类似于 Nexus 这种. 而且很多厂商其实到现在为止还是属于在使用 Java 的样子. 可能算是比较常见? 
+And I've only encountered it once. At that time I encountered a JAVA MAVEN private service, similar to Nexus and the like. And many vendors are still using Java at this point. Maybe it's common?
 
-> 不懂 Java
+> I don't understand Java
 
 ## CICD
 
-CICD 这个玩意也算是很常见的重点目标了. 
+CICD is also considered a common key target.
 
-> 为什么? 
-> 
-> 因为他能执行 shell 代码 或者脚本, 而且正常跑起来的时候需要的权限要的还不少. 少说是个能运行命令的 Root. 或者具有集群创建变更权限的 Root.
+> Why?
+>
+> Because it can execute shell code or scripts, and the permissions required to run normally are still not small. At least it's a root that can run commands. Or a root with cluster creation and modification permissions.
 
- 想通这点. 接下来具体情况就就是看滥用它就是了. 主要的滥用集中在他的自动构建和自动部署上, **修改他的流程脚本或者是脚本控制台**来执行命令/代码. 然后复用返回的信息.
+Once you understand this point, then the specific situation is just abusing it. The main abuse focuses on its automatic build and automatic deployment, **modifying its workflow scripts or script consoles** to execute commands/code. And then reuse the returned information.
 
-因此这些东西的洞一般是不会少的. 大佬们都是瞄着的. 再看看 Jenkins 更新多勤快, 你就明白了. 
+Therefore, holes in these things are generally not lacking. The big guys are aiming for them. Just look at how diligent Jenkins updates, and you'll understand.
 
-> 最最离谱的是, 我之前安装了一个 Jenkins 才过半天, 就是一个 DDOS 洞的更新. 
+> The most outrageous thing is that I installed a Jenkins only half a day ago, and it was a DDOS hole update.
 
 ### Jenkins
 
-Jenkins 这已经属于是行业标准了, 基本说到 CICD 就是它了. 以至于在基本的信息收集的阶段, 基本都能扫出以 jenkins 开头的域名.
+Jenkins is already an industry standard. Basically when it comes to CICD it's Jenkins. So much so that in the basic information gathering stage, domain names starting with jenkins can basically be scanned out.
 
-Jenkins 相关的滥用非常的多 可以看看 [Hacktricks - Jenkins](https://book.hacktricks.xyz/cloud-security/jenkins) 从枚举信息的滥用开始到具体的漏洞他都有相关的说明. 这个文档确实写的不错.
+Jenkins-related abuse is so much that you can check out [Hacktricks - Jenkins](https://book.hacktricks.xyz/cloud-security/jenkins) from enumerating information abuse to specific vulnerabilities. This doc is really well written.
 
-> 就是 Jenkins 这玩意属实是不太轻量. Java 嘛总是有 Java 的样子.
+> It's just that Jenkins is not really lightweight. Java always has the Java style.
 
-当然现在比较可以的还有 Webhook (Go写的那个), 我觉得还可以. 而且我的某些系统也在用. 这个目前来看问题不是很大. 轻量 但是功能不是很多, 很多时候需要写 Shell.
+Of course now there are more viable options like Webhook (the Go one), which I think is still good. And some of my systems are using it too. So far it doesn't seem to have many issues. Lightweight but not many features, often need to write Shell.
 
 ### Drone
 
-比较新的东西是 Drone 无人机. 以 container 作为特色的 CICD, 除了脚本之类的内容, 往往还会伴随着还有不少 Kubernetes 和 docker 的综合利用. 这一部分将在下一部分继续说明.
+Something newer is Drone CI. A CICD featuring containers, in addition to scripts and the like, is often accompanied by a lot of Kubernetes and docker combined utilization. This part will continue in the next section.
 
+## Multi Environment Failure
+
+Most important part of cluster service, cloud service is service discovery and service bundle. For example, Normal web application + mysql + redis. 
+
+The bundle in Cloud Native could be used as a single micro-service that serves to customers with some single function or program. 
+
+In developer's eyes, Service discovery and service registering in Cluster or other cloud environment make the service bundled as one unit more easily.
+
+But cloud make hacker to exploit more easily. If we can know how the function works, what dependencies it used and where is it. Enumerate other service, discover service nearby by abusing cloud creds and platform apis is as connivance as developer itself. 
+
+Also service union or combination makes exploitable possibility higher. Some service itself could be safe. But some apis logic between services are conflict or vulnerable. 
+
+> example: 
+> 
+> 1. using CVE-2018-1002105. exploit trust between API service and Kubelet apis. Only API service or kubelet is not vulnerable at all. But both of them is vulnerable.
+> 2. Some weave scope is safe and limited external access. But when some service has Pod PortForwarding privs (may be for debug). It makes everything worse.
 ## Online Testing
 
-测试服务也是开发过程中比较重要的一个环节. 而且往往为了和真实环境更加类似, 都会存在公网可以访问的在线测试的网站. 一般会有诸如 test 字眼出现在域名中. 这部分我想通过 `代码审计测试`  与 `在线测试集群` 两个部分. 主要是第二部分 Online Testing (Clusters)
+Testing is also an important part of the development process. Debugging on cloud service is more difficult. Some developers focus more on Testing.
 
+And in order to be more similar to the real environment, there are usually publicly accessible online testing websites. There are usually words like test in the domain name. I want to divide this part into two sections: `Code Audit Testing` and `Online Testing Clusters`. Mainly the second part Online Testing (Clusters)
 ### Code Audit
-这种服务我没咋个遇到过. 就看到过一次 Sonatype 安装在系统中, 并且作为 CICD 中间的一个自动测试服务运行, 似乎是进行静态代码检查和测试. (这里没有深入研究, 先挖一个坑.)
 
-看介绍和 DEMO 说可以保证一定的代码安全性和质量. 有些厂商会用这种东西保证代码的可靠性.
+I haven't really encountered this kind of service. I've only seen Sonatype installed in the system once, and running as an automated testing service in the CICD, seeming to do static code checking and testing. (No in-depth research here, leaving a pit first.)
 
-当然这玩意也是能执行命令(代码)的. https://help.sonatype.com/repomanager3/integrations/rest-and-integration-api/script-api 甚至在官方文档开头还是能看到 Unsafe 的.
+Looking at the introduction and demo, it says it can ensure a certain code security and quality. Some vendors use this to ensure code reliability.
 
-> 不过基本很少有看到有代码静态检测的. 撑死一个扫描和一个代码格式化 lint 一类的
+Of course this thing can also execute commands (code). https://help.sonatype.com/repomanager3/integrations/rest-and-integration-api/script-api Even the official docs can see Unsafe at the beginning. 
+
+> But basically there are few code static detection. At most a scan and a code formatting lint or something
+
+> Something interesting is the documents are hacker read-only, lots of developers ignore the official documents and turn to Stackoverflow. (lol)
 
 ### Online Testing (Clusters)
 
-> 当然我知道很多开发都是开在线灵车的. :- )
-> 
-> 比如 “我”
+> Of course I know many developments debugging with online production env :-).
+>
+> Such as "me"
 
-在线测试是就是一个在开发过程中很容易被忽略的点, 但又是安全人员可以去关注的点. 当一个团队快要进行上线发布之前的几个版本(或者从一开始)就进行测试的时候, 一般都会开一个和线上环境类似的服务器或者是多一个 k8s 集群. 
+Online testing is a point that can be easily overlooked during development, but is a point that security personnel can pay attention to. When a team is going to release a few versions before the official launch (or from the beginning), testing is usually done on a server or additional k8s cluster that is similar to the production environment.
 
-在线测试环境对开发而言, 提供了一个和生产环境类似的虚拟环境, 主要目的是为了上线前 Debug, 在 Bug 影响生产环境之前就被测试出并且去除, 拥有更加拟真的数据, 从而得到测试和预期效果的差距, 帮助开发更好的进行开发工作.
+For developers, the online test environment provides a virtual environment similar to the production environment, mainly for pre-launch Debug, finding and eliminating Bugs before they affect the production environment, having more realistic data, and getting the gap between test and expected results. effect, help developers do a better job of development.
 
-> 说人话就是排练
+> Just like rehearsal of the show.
 
-其中资源 配置 监控 等等和正式的服务基本都是类似的 甚至是一样的, 但往往密码却都是弱密码, 同时也因为不是生产环境, 所以 Debug 调试信息也会更多, 更常见, 更频繁. 
+Among them, resources, configurations, monitoring, etc. are basically the same or even the same as the official service, but the passwords are often weak passwords. At the same time, because it is not the production environment, debugging information is often more, more common and more frequent.
 
-> 例如前端就会开启 Webpack 的 SourceMap, 时常还有辅助的控制台输出.
+> For example, the frontend will turn on Webpack's SourceMap, and auxiliary console output is common.
 
-正因此, 这些内容的暴露使得开发的测试环境往往漏洞百出, 高风险更高. 往往保护也非常欠缺. 比如测试环境不在诸如防火墙 Waf 一类的安全产品的保护范围之中, 甚至他们就根本没有可能存在这类安全产品(当然现在企业这种情况非常的少, 所以 Bypass WAF 这种也是安全人员的必修课之一).
+It is because of the exposure of these contents that the development test environment is often full of loopholes and higher risk. Protection is often severely lacking. For example, the test environment is not within the protection of security products such as firewalls and WAFs. They may not even have the possibility of having such security products in the first place (of course this is very rare for companies now, so bypassing WAF is also a must for security personnel) .
 
-此外 测试环境中的测试内容可能会部分流入到正式的生产环境, 当然只是可能. 就例如之前我提到的 SSO Login 和 测试账号导致正式环境全授权的问题.
+In addition, some of the test content in the test environment may partially flow into the formal production environment, of course only possibly. Just like the previous SSO Login and test account issues I mentioned that caused full authorization in the formal environment.
 
-> 在云上这种风险会更高, 不过云上的事情下一章节再说. 这里先留下一个伏笔.
+> In the cloud this risk will be higher, but cloud stuff in the next section. Leave a foreshadowing here first.
 
-通过这些漏洞或者简单的弱密码, 我们就可以一脚踹进对方测试环境的大门, 进行信息的搜集. 我们可以很轻松的就收集到对方的一些偏好. 虽然这些不是生产环境的敏感信息, 但是明锐的红队成员中能嗅出其中的味道. 例如: 对方喜欢的技术栈 , 喜欢用的弱密码或者密码习惯 ( 比如 是偏好 123456 还是 111111 或者 888888 还是更喜欢其他的), 测试环境配置/监控 等. 密码之类的可能会改变, 但是密码偏好不会很快改变. (有些人就喜欢 中文名称+数字(生日或者123456)的 组合). 复用这些收集到的东西, 复用到正式服务或者其他公司的服务, 那么总会可以带给你意外的收货.
+Through these vulnerabilities or simple weak passwords, we can kick in the door of the other party's test environment and collect information. We can easily collect some of their preferences. Although this is not sensitive information in the production environment, discerning red team members can smell the scent in it. For example: the technology stack they like, the weak passwords or password habits they like (like do they prefer 123456 or 111111 or 888888 or prefer other things), test environment configuration/monitoring, etc. Passwords and the like may change, but password preferences won't change quickly. (Some people just like Chinese name PinYin + numbers (birthday or 123456) combinations). Reusing these collected things and reusing them in formal services or other company services will always bring you unexpected gains.
 
-之前我总是因为打下对方测试环境而感到难受, 但是经过仔细的一番搜寻之后其实测试环境暴露出来的问题往往更多更敏感. 
+I used to feel bad about hacking the other test environment, but after careful searching, the problems exposed by the test environment are often more and more sensitive.
 
-在测试环境中我们更希望横向移动到生产和内部, 所以更需要注重配置中公共服务的信息(例如公共数据库 公共配置中心 AKSK) 权限情况(存不存在越界访问等) 和 API 文档(这种定好了很难去改变的) 主要是这类可以复用到其他服务的信息, 何况测试环境本身对红队来说其实价值不是很高. 
+In the test environment, we want to move laterally more to production and internal, so we need to pay more attention to "sharing data" like public service information in the configuration (such as public databases, public configuration centers, AKSK), permission situations (whether there is transboundary access, etc.) and API documentation (which is difficult to change once finalized), mainly this kind of information that can be reused in other services. After all, the test environment itself is not of much value to the red team.
 
 ## Configs/Creds
 
 ### Config Server
 
 #### Cross Service
-有些企业常常会有 Config Server 这种服务, 通过一个 Creds 来访问和区分每个服务需要的凭证信息和内容, 可以做到给服务需要的资源. 如果配置的恰当, 一般暴露出来的内容其实很不利于继续横向的. 这种突破点一般是去寻找业务与业务之间相关的数据. 往往可以越过去, 这些地方很容易因为偷懒而获得高权限. 比如说共享数据库的账号的服务, **共享一些资源的凭证以及 API 调用的 KEY**. 这种服务间的跨越往往更为简单有效. 
+
+Some companies often have a Config Server service that accesses and distinguishes the credential information and content each service needs through a Creds, which can provide the resources the service needs. Even some external data source or API service.
+
+If configured properly, the exposed content is generally not conducive to further lateral movement. This breakthrough point is generally to look for data between businesses. It is often possible to skip over them. These places are easy to obtain high privileges due to laziness. 
+
+For example, services that share database accounts, **share some resource credentials and API call KEYs**. This kind of service crossover is often simpler and more effective.
 
 #### Man In the Middle
 
-此外, 这类配置服务需要注意预防中间人. 配置信息一般是较为敏感的内容. 这里需要注意. 
+In addition, such configuration services need to prevent man-in-the-middle attacks. Configuration information is generally more sensitive content. Pay attention here.
 
-比如有些服务的配置交流内容是 HTTP 交互的, 没有 TLS 加密. 这里只要一个 Wireshark 就能把他交互的内容和结果抓出来. 如何通讯如何获取, 配置又是什么一清二楚. 这确实是发生过的.
+For example, some services communicate configuration content via HTTP interaction without TLS encryption. Here you just need a Wireshark to capture the content and results of their interaction. How to communicate and how to obtain configuration, everything is clear. This did happen.
 
-e.g. 拿到了对方服务的二进制文件, 但是没有对方服务的 Config. 对方启用了 Config Server ,但是却是 明文交互的. 这里我们就可以直接启动二进制 + 本地抓包, 逆向都不用逆了.
+e.g. Got the binary file of the other party's service, but no Config of the other party's service. The other party enabled Config Server, but it was plaintext interaction. Here we can directly start the binary + local packet capture, no need to reverse at all.
 
 ### Creds
-还有些是相关的人的凭证, 又到了 **喜闻乐见的账号接管欺诈** 辣. 
 
-比如搞到了员工的账户或者系统服务的账号, 在静默情况下可以维持相当长一段的监听. 尤其是系统级别的账号. 比如说 XXXSYSTEM在其他系统 (比如说邮箱) 的账号密码.
+Some are related people's credentials, and it's the **joyous account takeover fraud** again.
 
-> 没啥大事(被盗号或者强制), 否则他们真的不会改密码. 你也不会 ;-)
+For example, getting an employee's account or a system service account can maintain a considerable length of silent monitoring. Especially system-level accounts. For example, the account and password of XXXSYSTEM in other systems (such as email).
 
-这里可以监听可以钓鱼, 做蛮多的事情. 还有本身有权限拿到的一些内容和数据.
+> There's no big deal (account theft or forced), otherwise they really won't change their password. You won't either ;-)
 
-服务类的账号接管, 比如 System 或者 admin 这种, 在域中可以类比为 Silver Ticket 的攻击. 通过接管系统中的服务性账号将更具有迷惑性和隐蔽性, 所以非常适合作为一种后门在对应的系统中持久化留存.
+Here you can monitor, phish, and do a lot of things. There is also some content and data that has permission to obtain.
 
+For service-type account takeover, such as System or admin, it can be analogized as a Silver Ticket attack in the domain. Taking over system service accounts in the system will be more confusing and covert, so it is very suitable as a backdoor to persist in the corresponding system.
 
 # Attack Coder
 
-> 本来这一章节我是打算删除的. 但是昨天发现某数据库泄漏和可能略有相关的某篇 CSDN 的文章 实在有些蚌埠住了.
+> I was originally planning to delete this section. But yesterday I discovered a certain database leak and a slightly related CSDN article that really left me speechless.
 
-这个章节我想探讨一下一种可能性. 即为通过社工或者其他方式得到企业员工账号, 监控他们的代码类社交网站(CSDN, Juejin)或者公共代码托管(Github, Gitlab) 是否存在一种可能可以通过员工的提交内容和社交网站的帖子, 旁敲侧击出对应公司内部技术栈和技术实现 甚至账密泄漏和 APIKey 的泄漏.
+In this section I want to explore a possibility - that is, by obtaining employee accounts through social engineering or other means, monitoring their code social sites (CSDN, Juejin some Chinese Social media for programmers and coders) or public code hosting (Github, Gitlab), whether there is a possibility to indirectly reveal the internal technical stack and technical implementation of the corresponding company, or even account and password leaks and APIKey leaks, through employees' submission content and posts on social sites.
 
-数据处理不当很容易出现这种事故. 有些程序员在研究了新的技术或者工具之后, 在文章中想要用一些例子来进行一些说明, 此时会涉及到一些代码的粘贴. 当代码的脱敏很容易因为这些内容导致泄漏. (比如那篇文章)
+Mishandling data can easily lead to such accidents. After some programmers study new technologies or tools, they want to use some examples in the article for illustration, which will involve pasting some code. Desensitization of the code can easily lead to leaks due to these contents. (Like that article)
 
-这类泄漏基本都有相关的利用和检查工具.
+There are related exploitation and checking tools for such leaks.
 
-但是我还是认为这种方式的可行性是很低的, 因为并不一定能找到泄漏, 也不是所有 Key 都可以, 也有可能对方程序员的安全素养非常的高或者根本没有这种平台的账号, 当然 Github 之类的平台还会有泄漏的检测和泄漏的警告邮件, 在种种原因下, 如果寄希望于此是非常容易导致竹篮打水一场空. 这也是为什么之前我打算删除这方面的内容.
+But I still think the feasibility of this approach is very low, because leaks may not necessarily be found, not all keys can be used, it is also possible that the programmer's security awareness is very high or does not have an account on such platforms at all. Of course platforms like Github also have leak detection and leak warning emails. For various reasons, if you rely on this, it is very likely to end up fruitless. This is also why I planned to delete the content in this area before.
 
-
-> # Attack Code PART 3 - Cloud Involved in Codes
-
+> **Attack Code PART 3 - Cloud Involved in Codes**
 # When Cloud involved
-当云技术作为一种新型技术栈开始普及, 我们之前的攻击点又会如何变化.
 
-> 其实之前的文章中已经有所提及这方面的内容了.
->
-> 先回顾一下之前的部分 在最先前的导入部分我有所提及.
->
-> 看看 CNCF 的技术愿景 https://landscape.cncf.io/ 
->
-> 这些软件或者服务项目都被各位佬们盯得死死的. 
+How will our previous attack points change when cloud technology becomes popular as a new technology stack?
 
-新技术总是能给人们带来新的玩法, 但是同时也会伴随着新的攻击面. 这是发展带来的负面.
+> In fact, related content has been mentioned in previous articles.
+>
+> Let's review the previous parts. I mentioned it in the intro section at the very beginning.
+>
+> Take a look at CNCF's technology vision https://landscape.cncf.io/
+>
+>  These software or service projects are all stared at by the experts.
+
+New technologies always bring new gameplays, but at the same time, new attack surfaces. This is the downside of development.
 
 ## Container
 
-容器化是云时代的第一个技术上的变革.
+Containerization is the first technological change in the cloud era.
 
-> 准确点说 容器化和容器编排带来了云时代的开始. 
-> 
-> 较为常见的是以 谷歌重写内部的编排系统 命名为 Kubernetes 后捐赠给 Linux 开源基金会作为云时代的开始
-> 
->	当然这里不是研究历史的文章.
+> To be more precise, containerization and container orchestration brought about the beginning of the cloud era.
+>
+>  The more common one is Kubernetes, which is Google rewriting its internal orchestration system and then donating it to the Linux Foundation as the beginning of the cloud era.
+>
+> Of course this is not an article to study history.
 
-Container 主要给开发者提供了隔离的最小运行环境, 解决了 "我本地能跑, 但是远程服务跑不起来" 这种痛点问题. 可以看看我第一篇文章的 IaC 部分.
+Containers mainly provide developers with isolated minimal runtime environments to solve the pain point of "it runs locally but doesn't run remotely". See the IaC section of my first article.
 
-容器隔离了很多东西, 其具体方法是通过内核的一些新特性 cgroup 和 namespace 隔离开来多种系统资源, 使得传统的针对所依赖资源进行滥用的进攻方法的危害大大降低. 
+Containers isolate many things. The specific method is to isolate various system resources through some new kernel features like cgroup and namespace, which greatly reduces the harm of traditional attacks that abuse dependent resources.
 
-> 例如:
-> 请设想这样一个场景: 应用程序和被攻陷的数据库资源, 在基于容器的库站分离时
-> 这使得即便我们拿下数据库中所有权, 也无法让我们进行通过 dumpfile 或者 日志 的方法写一句话木马的操作来获取到 服务器 shell. 在这里的文件系统是隔离开的
+> For example:
+>
+>  Consider this scenario: The application and compromised database resources are separated on a container-based repository
+>
+>  This prevents us from gaining server shell through writing one-line trojans using methods like dumpfile or logs, even if we take over all permissions in the database. The filesystem is isolated here.
 
-但是容器本身仍然具有两类核心攻击面. 这里类似逃逸, 如下:
-- 内核共享的调用/内存
-- 没有良好分离的资源 例如 proc 等.
+However, the container itself still has two core attack surfaces. Here are some escapes, as follows:
 
-> 知道创宇当时给我的面试题 [Release-Agent Docker Escape](https://github.com/Esonhugh/Docker-Release-Agent-Escape) . 已经开源了, 我用 Obsidian 构建了知识网. 可以看看作为参考. 当然本文其实也是在这里编辑的
+\- Kernel shared calls/memory
 
-后者基本是开发图省事或者不禁意间造成的错误配置, 通常利用手段是称之为 LoLBins 的技术. 这是一个非常广泛的话题. 这里就不做过多的赘述
+\- Resources without proper separation, such as proc, etc.
 
-> (举一个小小的例子 find 命令具有错误 suid 时, 可以通过 `-exec /bin/bash -p ` 
- 进行权限提升等等) 
+\> I know the interview question Zhiyou gave me [Release-Agent Docker Escape](https://github.com/Esonhugh/Docker-Release-Agent-Escape). It's open sourced now, I built a knowledge graph with Obsidian. Check it out as a reference. Of course this article is also edited here.
+
+The latter is basically an error configuration caused by developers being lazy or careless. The commonly used technique is called LoLBins. This is a very broad topic. I won't go into too much detail here.
+
+\> (To give a small example, the find command with incorrect suid can be used for privilege escalation with `-exec /bin/bash -p` etc.)
 
 ## Kubernetes
 
-谷歌开发的大名鼎鼎的编排系统 Go 开发的然后捐给了 Linux 基金会 然后有了 CNCF. 客套的话我们就不多说了. 
+Google's famous orchestration system developed in Go and then donated to the Linux Foundation, thus CNCF. We won't say too much about the courtesy.
 
-类似的系统有 docker swarm 等但是用的真的很少, 而且有的是商业方案.
+Similar systems include docker swarm, etc. but they are rarely used, and some are commercial solutions.
 
-在小型的互联网企业中"比较"常见的配置是 开发测试一套 k8s 搭配 正式环境一套 k8s 环境之间相互隔离. 但是又非常的类似, 然后内部做分布式做微服务, 对外做一个 nginx ingress 的负载均衡和 API Gateway 等等. 再加之 k8s 的服务发现等等特性, 能大幅度确保在上线过程中拥有和开发测试类似的环境.
+A "relatively" common configuration in small Internet companies is one set of k8s for development and testing, and one set of k8s environment for formal environment, mutually isolated. But they are very similar, doing microservices internally, and doing an nginx ingress load balancing and API Gateway externally, etc. Coupled with k8s service discovery and other features, it can greatly ensure a similar environment to development and testing during the release process.
 
-> 现在也有很多的公有的云服务具有这类的服务 可以直接买了然后开箱就用的. 虽然和你直接自己搭没啥区别 (x
+> Now there are also many public cloud services that have such services that can be purchased and used out of the box. Although there is no difference from building it yourself (x
 >
-> 随着这类服务的不断完善 一些公司也会渐渐的使用云来构建自己的服务.
+>  As these services continue to improve, some companies will also gradually use the cloud to build their services.
 
-如果初入 k8s 我较为推荐两个材料可以尝试阅读官方文档和 [hacktricks 的云安全区渗透测试 k8s](https://book.hacktricks.xyz/cloud-security/pentesting-kubernetes) (用其中的 basic 作为阅读材料也可以使得我们快速把握 k8s 整个框架的要点) 尤其是后者.
+If you're new to k8s, I'd recommend trying two materials - reading the official docs and [hacktricks cloud security pentesting k8s](https://book.hacktricks.xyz/cloud-security/pentesting-kubernetes) (using the basics there as reading material can also allow us to quickly grasp the key points of the entire k8s framework), especially the latter.
 
-K8s 主要的脆弱点需要注意如下的一些场景
+The main vulnerabilities of k8s need to pay attention to the following scenarios
 
-- 上面提到的容器的问题 
-- 权限配置的问题 serviceaccount 这种凭据
-- 还需要留意下是否存在 几个严重的 CVE 尤其是提权类的
-- 控制端口 监控平台 管理平台 或者具有特殊权限的 Pod2 暴露
+\- The container issues mentioned above
 
-此外有一个好用的枚举工具叫做 CDK , 同样针对这些常见场景有 https://madhuakula.com/kubernetes-goat/docs/ 来进行实验.
+\- Permission configuration issues like serviceaccount credentials
 
-集群的监控 web 端, 开发人员常常用于监控和测试整个集群的状态. 例如 weave ,当然这是一种管理工具, 也是一种 **合法的** 后门. 而且似乎已经有人那么干了.
+\- Also pay attention to whether there are some serious CVEs, especially privilege escalation ones
 
-> 众所周知 所有的 **管理工具**都是可以滥用成 **黑客工具**的 比如说 psexec 这种 sysinternals toolkit.
+\- Exposed control ports, monitoring platforms, management platforms, or Pods with special privileges
+
+In addition, there is a useful enumeration tool called CDK, which also has https://madhuakula.com/kubernetes-goat/docs/ for these common scenarios.
+
+The cluster monitoring web interface is often used by developers to monitor and test the status of the entire cluster. For example weave, of course this is a management tool, and also a **legitimate** backdoor. And it seems someone has done that.
+
+> As we all know, all **management tools** can be abused as **hacker tools**, such as psexec in the sysinternals toolkit.
 
 ## Clouds Services
 
-这里主要是一些公有云服务还有一些搭建的私有但是可接入的云(政务). 
+This mainly refers to some public cloud services and some private clouds that can be accessed (government).
 
-政务这里牵扯一些公民和组织的一些数据 例如交通一卡通, 疾控, 疫情防控, 党建, 团建 等等关系一些民生政务的服务, 然后由相关系统(例如学校 部分组织分部)对应的去对接或者外包来使用这些系统, 这种一般来说会有地区性的大数据公司和云服务商来做.
+Government involves some data of citizens and organizations, such as transportation cards, disease control, epidemic prevention and control, party building, team building, etc. related to people's livelihood services, which are then corresponded or outsourced for use by related systems (such as schools, some organizational departments), etc. This kind of thing is generally done by regional big data companies and cloud service providers.
 
-云的核心和 CTF 中常见的内网题并不太一样, 但是接触下来发现和域有一些些类似. 
+The core of the cloud is not quite the same as the internal network topics common in CTF, but after getting in touch, I found it somewhat similar to domains.
 
 ### Creds Abuse
-例如云偏重于高权限账户 AKSK STS 这类 **凭据** 的滥用 尤其是一些跨服务的凭证. 这类凭证丰富了开发者在系统内或者云端可以调用的资源, 同时也有助于红队和渗透队员扩大他们的战果 获取到更多更敏感的信息. OSS 等服务会有访问控制的策略等等, 非常类似域对象的 ACL.
 
-因此往往在相对云渗透测试过程中我们会更加侧重于对于上文之前提到的资产, 尤其需要注意的是凭证. 尝试找到他们然后滥用他们, 辅以内网的一些奇技淫巧, 来达到我们的目的.
+For example, the cloud focuses on the abuse of high-privilege accounts like AKSK STS and other **credentials**, especially some cross-service credentials. These credentials enrich the resources developers can invoke within the system or cloud, while also helping red teams and penetration testers expand their gains for more and more sensitive information. OSS and other services will have access control policies, etc., very similar to domain object ACLs.
 
-当然对于开发而言, 程序接入云使用云的服务, 通过云服务商提供的 SDK 和访问凭证 可以很方便的进行开发或管理处理云上拥有的资源. 同样 因为具有跨越服务的特点, 这些用到了其中的服务凭证也常常就成为了攻击者滥用的地方.
+Therefore, during the cloud penetration testing process, we will often focus more on the assets mentioned above, especially credentials. Try to find them and abuse them, combined with some tricks of the internal network, to achieve our goals.
+
+Of course, for developers, programs accessing and using cloud services through SDKs and access credentials provided by cloud service providers can easily develop or manage resources in the cloud. Similarly, because of the cross-service characteristics, the service credentials used in them often become the places where attackers abuse them.
 
 ### Metadata
 
-此外特别值得一提的是, 需要注意一些云环境的内网中还会有称之为元数据的内容 也就是 meta-data 服务. 这里同样可以泄漏不少有价值的信息, 比如 secrets 啦, Key 啦, 还有 \[相当致命\] 的 STSToken . 这直接导致 SSRF 可以直接获得对某些资源(OSS ECS)的访问能力, 因而形成了 SSRF 这类漏洞在云上的一种独特的利用, 以至于现在不少的文章在提及到云安全的时候提到这种攻击方法.
+In addition, it is worth mentioning that attention should also be paid to some metadata in the internal network of the cloud environment, also known as the meta-data service. Similarly, this can leak a lot of valuable information, such as secrets, keys, and [quite fatal] STSTokens. This directly leads to SSRF which can directly obtain access to certain resources (OSS ECS) and thus forms a unique exploitation of vulnerabilities like SSRF in the cloud. So much so that many articles now mention this attack method when referring to cloud security.
 
-> 不过并不是所有的服务器都有这些内容. 这些往往需要特殊配置.
+\> However, not all servers have this information. These often require special configuration.
 
 ### Document
-因为云通常是一些 toB (学生机个人网站托管等带有教育学习性质的不太算 toB, 量也不是很大) 的业务, 所以既然有对接的可能存在那么通常会存在相关的文档, 包括一些 API 调用方法 SDK 等等, 凭证的策略, 安全的策略, 甚至默认的账户密码. 如果对这个云的策略不是很熟悉, 强烈推荐去食用相关的文档 (不仅仅是公有的云, 相关私有的云服务和数据提供商基本都会有这些) 如果没有可以尝试扒一扒 SDK (大可能是 Java).
+
+Since the cloud is usually a toB business (student personal website hosting and other educational learning services are not really toB, and the volume is not that large either), there will usually be related documents if there is integration, including some API calling methods, SDKs, credential policies, security policies, and even default account passwords. If you are not very familiar with the policies of this cloud, it is highly recommended to consume related documents (not just public clouds, related private clouds and data providers will basically have these). If not, try to scrape the SDK (most likely Java).
 
 ## WrapUp
 
-这些已经有大佬开始整理并且输出了文章和大量的工具, 甚至是一套类似 ATT&CK 的知识矩阵. 
+These have been summarized and output in articles and a large number of tools by experts, and even a knowledge matrix similar to ATT&CK.
 
-比如说 [T-Wiki](https://wiki.teamssix.com) [cf](https://github.com/teamssix/cf) aws 还有 [pacu](https://github.com/RhinoSecurityLabs/pacu) 这类工具. 国外并没有国内云服务厂商的服务的利用工具, 基本上市面上可以看到的都是国人针对性开发的工具.
+Such as [T-Wiki](https://wiki.teamssix.com/) [cf](https://github.com/teamssix/cf) aws and [pacu](https://github.com/RhinoSecurityLabs/pacu). Overseas there are no tools for exploiting services of domestic cloud service providers. Basically what you can see on the market are tools developed specifically by Chinese.
 
 # Future
 
-我想云很快应该会在虚拟的内网组建中和一些企业内部的网络链接起来, 通过特定的路由方式或者网络定义, 进行部分的融合, 互联互通, 资源共享, 建设内网. 
+I think the cloud will soon be linked with virtual internal networks and some enterprise internal networks through specific routing methods or network definitions, partially merged, interconnected, resource sharing, and internal network construction.
 
-> 这类情况可能会在一些特别的场景中遇到, 例如一些敏感信息要求不能放在云服务器和云数据库上但是业务系统还需要使用的时候等等.
+>  Such situations may be encountered in some special scenarios, such as when some sensitive information cannot be placed on cloud servers and cloud databases but business systems still need to use them, etc.
 
- 这类可能是自己开发的系统和虚拟组网 也可以说例如云上域的 AzureAD. 当然不仅是业务, 也包括和更多的 OA 项目 组织管理等程序软件的协同合作 开发 提供服务. 
+These may be self-developed systems and virtual networking, or something like AzureAD in the cloud. Of course not just business, but also collaboration with more OA projects, organizational management software, development, service provision, etc.
 
-可以期待一下.
-
-
+Looking forward to it.
